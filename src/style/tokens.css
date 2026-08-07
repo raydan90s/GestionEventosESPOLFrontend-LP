@@ -1,0 +1,94 @@
+:root {
+  /* superficies */
+  --bg: #f7f8fa;
+  --panel: #ffffff;
+  --panel-hover: #f2f4f8;
+  --panel-muted: #edeff3;
+  --border: #dde1e8;
+
+  /* texto */
+  --text: #0d1117;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+
+  /* marca — azul institucional ESPOL */
+  --primary: #2563ab;
+  --primary-hover: #1a4d8f;
+  --primary-active: #143c72;
+  --primary-soft: #d8e6f6;
+  --on-primary: #ffffff;
+
+  --secondary: #0c2340;
+  --secondary-hover: #102e57;
+  --on-secondary: #ffffff;
+
+  /* acento — ámbar, solo para acción e inscripción */
+  --accent: #e07b1e;
+  --accent-hover: #b85f12;
+  --accent-soft: #fdf0dc;
+  --on-accent: #ffffff;
+
+  /* estados */
+  --success: #16a34a;  --success-soft: #e7f6ec;
+  --warning: #d97706;  --warning-soft: #fdf0dc;
+  --danger:  #dc2626;  --danger-soft:  #fce9e9;
+  --info:    #2563ab;  --info-soft:    #d8e6f6;
+
+  /* categorías de evento */
+  --cat-taller:    #0e9f8f;
+  --cat-club:      #7c4dbc;
+  --cat-seminario: #2563ab;
+  --cat-deporte:   #4d9a2a;
+  --cat-cultura:   #c2417f;
+
+  /* forma y sombra */
+  --radius-card: 14px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgb(12 35 64 / .06), 0 4px 12px rgb(12 35 64 / .06);
+  --shadow-pop:  0 8px 28px rgb(12 35 64 / .14);
+
+  /* 'Inter Variable' es el nombre que registra @fontsource-variable/inter;
+     'Inter' cubre el caso de tenerla instalada en el sistema. */
+  --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+}
+
+[data-theme="dark"] {
+  --bg: #0b1220;
+  --panel: #131c2e;
+  --panel-hover: #1a2438;
+  --panel-muted: #1f2a40;
+  --border: #26324a;
+
+  --text: #e8edf5;
+  --text-muted: #a3b0c4;
+  --text-subtle: #6f7d94;
+
+  --primary: #4a8ed6;
+  --primary-hover: #6ba5e3;
+  --primary-active: #2563ab;
+  --primary-soft: #17304f;
+
+  --secondary: #e8edf5;
+  --secondary-hover: #ffffff;
+  --on-secondary: #0c2340;
+
+  --accent: #f2a33d;
+  --accent-hover: #fbc97a;
+  --accent-soft: #3a2a12;
+  --on-accent: #1a1206;
+
+  --success: #45c46f;  --success-soft: #12301d;
+  --warning: #eba13c;  --warning-soft: #33260f;
+  --danger:  #f16b6b;  --danger-soft:  #3a1a1a;
+  --info:    #4a8ed6;  --info-soft:    #17304f;
+
+  --cat-taller:    #2ec4b2;
+  --cat-club:      #a17ce0;
+  --cat-seminario: #4a8ed6;
+  --cat-deporte:   #79c34f;
+  --cat-cultura:   #e06aa4;
+
+  --shadow-card: 0 1px 2px rgb(0 0 0 / .4), 0 4px 12px rgb(0 0 0 / .3);
+  --shadow-pop:  0 8px 28px rgb(0 0 0 / .5);
+}

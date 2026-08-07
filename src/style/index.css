@@ -1,0 +1,38 @@
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* El foco siempre es azul institucional, nunca ámbar. */
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /*
+   * Chip de categoría. El color se inyecta con la variable `--chip-color`
+   * (ver CATEGORIES en `@constants/categories`). Tailwind v3 no puede aplicar
+   * modificadores de opacidad (`/12`) sobre colores declarados como `var(--x)`,
+   * así que el fondo al 12 % se resuelve con `color-mix`.
+   */
+  .chip-cat {
+    color: var(--chip-color);
+    border-color: var(--chip-color);
+    background-color: color-mix(in srgb, var(--chip-color) 12%, transparent);
+  }
+}
