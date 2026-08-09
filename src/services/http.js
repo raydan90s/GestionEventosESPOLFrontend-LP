@@ -43,14 +43,18 @@ export async function request(path, options = {}) {
 }
 
 export const http = {
-  /** @param {string} path @param {Record<string, unknown>} [params] */
-  get: (path, params) => {
-    const query = params
-      ? `?${new URLSearchParams(
+  /**
+   * @param {string} path
+   * @param {Record<string, unknown>} [params] Los valores vacíos no viajan en la query.
+   * @param {RequestInit} [options] Útil para pasar un `signal` y cancelar la petición.
+   */
+  get: (path, params, options) => {
+    const search = params
+      ? new URLSearchParams(
           Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''),
-        )}`
+        ).toString()
       : ''
-    return request(`${path}${query}`)
+    return request(search ? `${path}?${search}` : path, options)
   },
   /** @param {string} path @param {unknown} body */
   post: (path, body) => request(path, { method: 'POST', body: JSON.stringify(body) }),

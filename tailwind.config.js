@@ -5,21 +5,43 @@ export default {
   theme: {
     extend: {
       fontFamily: {
+        // `font-serif` es la voz editorial: títulos de página y de evento.
+        serif: ['var(--font-serif)'],
         sans: ['var(--font-sans)'],
         mono: ['var(--font-mono)'],
       },
+      /* Escala tipográfica del sistema de diseño (DESIGN.md §typography). */
+      fontSize: {
+        display: ['3rem',    { lineHeight: '3.5rem', letterSpacing: '-0.02em' }],
+        headline: ['2rem',   { lineHeight: '2.5rem' }],
+        title: ['1.5rem',    { lineHeight: '2rem' }],
+        'body-lg': ['1.125rem', { lineHeight: '1.75rem' }],
+        label: ['0.875rem',  { lineHeight: '1.25rem', letterSpacing: '0.05em' }],
+      },
+      maxWidth: {
+        // Rejilla fija de 1280 px del sistema de diseño.
+        container: '80rem',
+      },
       borderRadius: {
         card: 'var(--radius-card)',
+        chip: 'var(--radius-chip)',
         pill: 'var(--radius-pill)',
       },
+      /* No hay sombra de reposo: la profundidad la da el borde de 1 px. */
       boxShadow: {
-        card: 'var(--shadow-card)',
-        pop:  'var(--shadow-pop)',
+        hover: 'var(--shadow-hover)',
+        pop:   'var(--shadow-pop)',
       },
       colors: {
         canvas: 'var(--bg)',
-        card:   { DEFAULT: 'var(--panel)', hover: 'var(--panel-hover)', muted: 'var(--panel-muted)' },
-        edge:   'var(--border)',
+        card:   {
+          DEFAULT: 'var(--panel)',
+          hover:   'var(--panel-hover)',
+          muted:   'var(--panel-muted)',
+          sunken:  'var(--panel-sunken)',
+        },
+        edge:   { DEFAULT: 'var(--border)', strong: 'var(--border-strong)' },
+        footer: 'var(--footer)',
         fg:     { DEFAULT: 'var(--text)', muted: 'var(--text-muted)', subtle: 'var(--text-subtle)' },
 
         primary: {
@@ -47,19 +69,24 @@ export default {
         info:    { DEFAULT: 'var(--info)',    soft: 'var(--info-soft)' },
 
         cat: {
-          taller:    'var(--cat-taller)',
-          club:      'var(--cat-club)',
-          seminario: 'var(--cat-seminario)',
-          deporte:   'var(--cat-deporte)',
-          cultura:   'var(--cat-cultura)',
+          taller:         'var(--cat-taller)',
+          club:           'var(--cat-club)',
+          seminario:      'var(--cat-seminario)',
+          deporte:        'var(--cat-deporte)',
+          cultura:        'var(--cat-cultura)',
+          emprendimiento: 'var(--cat-emprendimiento)',
+          otra:           'var(--cat-otra)',
         },
       },
       animation: {
-        'fade-up': 'fadeUp 0.6s ease forwards',
+        /* `both` y no `forwards`: la rejilla del catálogo escalona la entrada
+           con `animation-delay`, y sin relleno hacia atrás las tarjetas
+           retrasadas se verían un instante antes de empezar a animarse. */
+        'fade-up': 'fadeUp 0.4s ease both',
       },
       keyframes: {
         fadeUp: {
-          '0%':   { opacity: '0', transform: 'translateY(16px)' },
+          '0%':   { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },

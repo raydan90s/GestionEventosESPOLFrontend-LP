@@ -12,7 +12,13 @@ export function aforoPorcentaje(inscritos, cupoMaximo) {
 }
 
 /**
- * Color de la barra de aforo: verde hasta 60 %, ámbar 60–90 %, rojo por encima de 90 %.
+ * Presión sobre el aforo: holgado hasta 60 %, ajustado 60–90 %, crítico por
+ * encima de 90 %.
+ *
+ * Sirve para **destacar el texto** de cupos restantes, no para teñir la barra:
+ * la barra es azul institucional salvo que el evento esté lleno (ver
+ * `AFORO_BAR_CLASS` y PALETA.md §2).
+ *
  * @param {number} porcentaje 0–100.
  * @returns {'success' | 'warning' | 'danger'}
  */
@@ -23,11 +29,16 @@ export function aforoNivel(porcentaje) {
   return 'success'
 }
 
-/** Clases Tailwind del relleno de la barra, por nivel. */
+/**
+ * Clases del relleno de la barra.
+ *
+ * El sistema de diseño pide pista neutra y relleno en azul institucional; el
+ * ámbar queda fuera porque es el color de inscribirse. El rojo se reserva al
+ * único estado que corta el flujo: no queda ni un cupo.
+ */
 export const AFORO_BAR_CLASS = Object.freeze({
-  success: 'bg-success',
-  warning: 'bg-warning',
-  danger: 'bg-danger',
+  libre: 'bg-primary',
+  lleno: 'bg-danger',
 })
 
 /**

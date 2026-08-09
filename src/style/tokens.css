@@ -1,25 +1,39 @@
+/*
+ * Tokens del «EventosESPOL Digital System».
+ *
+ * El sistema es institucional y editorial: superficies casi blancas con un
+ * tinte azul, profundidad por borde de 1 px en vez de sombra, esquinas de 4 px
+ * y titulares en serif. Ver docs/PALETA.md.
+ */
+
 :root {
-  /* superficies */
-  --bg: #f7f8fa;
+  /* superficies — capas tonales, no sombras */
+  --bg: #f8f9ff;
   --panel: #ffffff;
-  --panel-hover: #f2f4f8;
-  --panel-muted: #edeff3;
-  --border: #dde1e8;
+  --panel-hover: #f4f7ff;
+  --panel-muted: #eef4ff;
+  --panel-sunken: #e5eeff;
+  --border: #dbe3f0;
+  --border-strong: #c2c6d2;
+
+  /* banda inferior institucional */
+  --footer: #dfe9fa;
 
   /* texto */
-  --text: #0d1117;
-  --text-muted: #6b7280;
-  --text-subtle: #9ca3af;
+  --text: #121c28;
+  --text-muted: #424751;
+  --text-subtle: #727782;
 
   /* marca — azul institucional ESPOL */
   --primary: #2563ab;
   --primary-hover: #1a4d8f;
   --primary-active: #143c72;
-  --primary-soft: #d8e6f6;
+  --primary-soft: #d5e3ff;
   --on-primary: #ffffff;
 
-  --secondary: #0c2340;
-  --secondary-hover: #102e57;
+  /* azul profundo: logotipo, botón de la navbar y titulares */
+  --secondary: #004b8d;
+  --secondary-hover: #00396d;
   --on-secondary: #ffffff;
 
   /* acento — ámbar, solo para acción e inscripción */
@@ -31,64 +45,86 @@
   /* estados */
   --success: #16a34a;  --success-soft: #e7f6ec;
   --warning: #d97706;  --warning-soft: #fdf0dc;
-  --danger:  #dc2626;  --danger-soft:  #fce9e9;
-  --info:    #2563ab;  --info-soft:    #d8e6f6;
+  --danger:  #ba1a1a;  --danger-soft:  #ffdad6;
+  --info:    #2563ab;  --info-soft:    #d5e3ff;
 
   /* categorías de evento */
-  --cat-taller:    #0e9f8f;
-  --cat-club:      #7c4dbc;
+  --cat-taller:    #0e7f73;
+  --cat-club:      #6d3fb0;
   --cat-seminario: #2563ab;
-  --cat-deporte:   #4d9a2a;
-  --cat-cultura:   #c2417f;
+  --cat-deporte:   #3f7f22;
+  --cat-cultura:   #b03571;
+  --cat-emprendimiento: #934b00;
+  /* Color de reserva para una categoría que la base tenga y la paleta no. */
+  --cat-otra:      #545a66;
 
-  /* forma y sombra */
-  --radius-card: 14px;
+  /*
+   * Forma: el sistema es «soft y contenido». 4 px en tarjetas, botones y
+   * campos; la píldora queda para los filtros y las barras de progreso.
+   */
+  --radius-card: 4px;
+  --radius-chip: 4px;
   --radius-pill: 999px;
-  --shadow-card: 0 1px 2px rgb(12 35 64 / .06), 0 4px 12px rgb(12 35 64 / .06);
-  --shadow-pop:  0 8px 28px rgb(12 35 64 / .14);
 
-  /* 'Inter Variable' es el nombre que registra @fontsource-variable/inter;
-     'Inter' cubre el caso de tenerla instalada en el sistema. */
-  --font-sans: 'Inter Variable', 'Inter', system-ui, sans-serif;
+  /*
+   * Profundidad por borde. No hay sombra en reposo: sólo al pasar el cursor
+   * por una tarjeta y en elementos que flotan sobre el contenido.
+   */
+  --shadow-hover: 0 2px 8px rgb(18 28 40 / .08);
+  --shadow-pop: 0 8px 28px rgb(18 28 40 / .14);
+
+  /*
+   * '… Variable' es el nombre que registran los paquetes @fontsource-variable;
+   * el nombre sin sufijo cubre el caso de tenerlas instaladas en el sistema.
+   */
+  --font-serif: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, serif;
+  --font-sans: 'Hanken Grotesk Variable', 'Hanken Grotesk', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 [data-theme="dark"] {
-  --bg: #0b1220;
-  --panel: #131c2e;
-  --panel-hover: #1a2438;
-  --panel-muted: #1f2a40;
-  --border: #26324a;
+  --bg: #0e1520;
+  --panel: #16202e;
+  --panel-hover: #1c2838;
+  --panel-muted: #1f2b3c;
+  --panel-sunken: #131c28;
+  --border: #2a3849;
+  --border-strong: #3d4d61;
 
-  --text: #e8edf5;
-  --text-muted: #a3b0c4;
-  --text-subtle: #6f7d94;
+  --footer: #131c28;
 
-  --primary: #4a8ed6;
-  --primary-hover: #6ba5e3;
-  --primary-active: #2563ab;
+  --text: #eaf1ff;
+  --text-muted: #aebbcc;
+  --text-subtle: #7c8899;
+
+  --primary: #a6c8ff;
+  --primary-hover: #cfe0ff;
+  --primary-active: #7fadf0;
   --primary-soft: #17304f;
+  --on-primary: #00325c;
 
-  --secondary: #e8edf5;
-  --secondary-hover: #ffffff;
-  --on-secondary: #0c2340;
+  --secondary: #cfe0ff;
+  --secondary-hover: #eaf1ff;
+  --on-secondary: #00325c;
 
   --accent: #f2a33d;
   --accent-hover: #fbc97a;
   --accent-soft: #3a2a12;
-  --on-accent: #1a1206;
+  --on-accent: #301400;
 
   --success: #45c46f;  --success-soft: #12301d;
   --warning: #eba13c;  --warning-soft: #33260f;
-  --danger:  #f16b6b;  --danger-soft:  #3a1a1a;
-  --info:    #4a8ed6;  --info-soft:    #17304f;
+  --danger:  #ffb4ab;  --danger-soft:  #3a1a1a;
+  --info:    #a6c8ff;  --info-soft:    #17304f;
 
   --cat-taller:    #2ec4b2;
-  --cat-club:      #a17ce0;
-  --cat-seminario: #4a8ed6;
-  --cat-deporte:   #79c34f;
-  --cat-cultura:   #e06aa4;
+  --cat-club:      #b79cf0;
+  --cat-seminario: #a6c8ff;
+  --cat-deporte:   #8fd45f;
+  --cat-cultura:   #f087b8;
+  --cat-emprendimiento: #ffb782;
+  --cat-otra:      #a3b0c4;
 
-  --shadow-card: 0 1px 2px rgb(0 0 0 / .4), 0 4px 12px rgb(0 0 0 / .3);
-  --shadow-pop:  0 8px 28px rgb(0 0 0 / .5);
+  --shadow-hover: 0 2px 8px rgb(0 0 0 / .45);
+  --shadow-pop: 0 8px 28px rgb(0 0 0 / .5);
 }

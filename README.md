@@ -29,6 +29,8 @@ npm run dev             # http://localhost:5173
 
 - [docs/ESTRUCTURA.md](docs/ESTRUCTURA.md) — convención de carpetas y alias de imports.
 - [docs/PALETA.md](docs/PALETA.md) — tokens de color, tema oscuro y reglas de uso.
+- [docs/INSCRIPCIONES.md](docs/INSCRIPCIONES.md) — inscripciones y listado de asistentes:
+  contrato con la API, control de aforo y manejo de errores.
 
 ## En corto
 

@@ -2,34 +2,40 @@ import { AFORO_BAR_CLASS, aforoNivel, aforoPorcentaje, cuposDisponibles } from '
 import { cn } from '@utils/cn'
 
 /**
- * Barra de aforo. Verde hasta 60 %, ámbar 60–90 %, rojo por encima de 90 %.
- * @param {{ inscritos: number, cupoMaximo: number, className?: string }} props
+ * Indicador de ocupación: rótulo, cifra, barra y cupos restantes.
+ *
+ * `cuposDisponibles` es el que manda el servidor y tiene prioridad: es la única
+ * cifra fiable, porque la calcula la misma transacción que descuenta el cupo.
+ * Sólo si no llega se deduce restando los inscritos del aforo.
+ *
+ * La barra va en azul institucional y se pone roja únicamente cuando no queda
+ * ni un cupo; los eventos apretados se avisan resaltando el texto, no tiñendo
+ * la barra de ámbar (ver PALETA.md §2).
+ *
+ * @param {{
+ *   inscritos: number,
+ *   cupoMaximo: number,
+ *   cuposDisponibles?: number,
+ *   className?: string,
+ * }} props
  */
-export function AforoBar({ inscritos, cupoMaximo, className }) {
+export function AforoBar({ inscritos, cupoMaximo, cuposDisponibles: libresApi, className }) {
   const porcentaje = aforoPorcentaje(inscritos, cupoMaximo)
-  const nivel = aforoNivel(porcentaje)
-  const libres = cuposDisponibles(inscritos, cupoMaximo)
+  const libres = libresApi ?? cuposDisponibles(inscritos, cupoMaximo)
+  const lleno = libres <= 0
+  const apretado = !lleno && aforoNivel(porcentaje) !== 'success'
 
   return (
     <div className={cn('space-y-1.5', className)}>
-      <div className="flex items-baseline justify-between text-xs">
-        <span className="text-fg-muted">
-          {inscritos} / {cupoMaximo} inscritos
-        </span>
-        <span
-          className={cn(
-            'font-medium',
-            nivel === 'danger' && 'text-danger',
-            nivel === 'warning' && 'text-warning',
-            nivel === 'success' && 'text-fg-subtle',
-          )}
-        >
-          {libres === 0 ? 'Sin cupos' : `${libres} disponibles`}
+      <div className="flex items-baseline justify-between gap-3 text-sm">
+        <span className="text-fg-muted">Ocupación</span>
+        <span className="font-medium tabular-nums text-fg">
+          {inscritos} / {cupoMaximo}
         </span>
       </div>
 
       <div
-        className="h-1.5 w-full overflow-hidden rounded-pill bg-card-muted"
+        className="h-1.5 w-full overflow-hidden rounded-pill bg-card-sunken"
         role="progressbar"
         aria-valuenow={porcentaje}
         aria-valuemin={0}
@@ -37,10 +43,22 @@ export function AforoBar({ inscritos, cupoMaximo, className }) {
         aria-label="Ocupación del evento"
       >
         <div
-          className={cn('h-full rounded-pill transition-all', AFORO_BAR_CLASS[nivel])}
+          className={cn(
+            'h-full rounded-pill transition-all',
+            AFORO_BAR_CLASS[lleno ? 'lleno' : 'libre'],
+          )}
           style={{ width: `${porcentaje}%` }}
         />
       </div>
+
+      <p
+        className={cn(
+          'text-xs font-medium',
+          lleno ? 'text-danger' : apretado ? 'text-primary' : 'text-fg-muted',
+        )}
+      >
+        {lleno ? 'Sin cupos' : libres === 1 ? 'Queda 1 cupo' : `Quedan ${libres} cupos`}
+      </p>
     </div>
   )
 }

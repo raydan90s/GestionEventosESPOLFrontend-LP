@@ -1,59 +1,98 @@
 import { Link } from 'react-router-dom'
 import { AforoBar } from '@components/AforoBar'
 import { CategoryChip } from '@components/CategoryChip'
+import { StatusBadge } from '@components/StatusBadge'
+import { CalendarIcon, PinIcon } from '@components/icons'
+import { EVENT_STATUS, EVENT_STATUS_META } from '@constants/eventStatus'
 import { eventoDetalle } from '@constants/routes'
-import { cuposDisponibles } from '@utils/aforo'
 import { formatDateTime } from '@utils/formatDate'
 
 /**
  * Tarjeta del catálogo.
  *
- * Demuestra los alias (`@components`, `@constants`, `@utils`) y las reglas de la paleta:
- * el título es azul institucional al pasar el mouse, y el ámbar queda reservado
- * al botón de inscripción.
+ * Sigue la maqueta institucional: superficie blanca definida por un borde de
+ * 1 px (nada de sombra en reposo), titular en serif y metadatos en grotesca
+ * con icono. El pie de la tarjeta —aforo y acciones— se ancla abajo con
+ * `mt-auto` para que las tarjetas de una misma fila alineen barras y botones
+ * aunque los títulos tengan distinto número de líneas; el `pt-6` garantiza el
+ * aire mínimo sobre el separador en la tarjeta más alta, donde `mt-auto` ya no
+ * deja hueco.
  *
- * @param {{ event: import('@/types/event').Event }} props
+ * El aforo lo manda el servidor (`cuposDisponibles`), no se calcula aquí.
+ * Regla de la paleta: el ámbar queda reservado a la acción de inscribirse, que
+ * es el único elemento de acento de la tarjeta.
+ *
+ * `posicion` sólo escalona la animación de entrada para que la rejilla no
+ * aparezca de golpe. Se recorta a las primeras filas: más allá, la espera se
+ * notaría más que el efecto.
+ *
+ * @param {{ event: import('@/types/event').Event, posicion?: number }} props
  */
-export function EventCard({ event }) {
-  const libres = cuposDisponibles(event.inscritos, event.cupoMaximo)
-  const lleno = libres === 0
+export function EventCard({ event, posicion = 0 }) {
+  const lleno = event.cuposDisponibles <= 0
+  const activo = event.estado === EVENT_STATUS.ACTIVO
+  const meta = EVENT_STATUS_META[event.estado]
+  const cerrado = lleno || !activo
+  const destino = eventoDetalle(event.id)
 
   return (
-    <article className="animate-fade-up flex flex-col gap-4 rounded-card border border-edge bg-card p-5 shadow-card transition-colors hover:bg-card-hover">
-      <header className="space-y-2">
-        <CategoryChip categoryId={event.categoriaId} />
+    <article
+      className="animate-fade-up surface flex flex-col p-6 transition-shadow hover:shadow-hover"
+      style={{ animationDelay: `${Math.min(posicion, 8) * 60}ms` }}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <CategoryChip nombre={event.categoriaNombre} />
+        <StatusBadge estado={event.estado} lleno={lleno} />
+      </div>
 
-        <h3 className="text-lg font-semibold leading-snug">
-          <Link to={eventoDetalle(event.id)} className="hover:text-primary">
-            {event.titulo}
-          </Link>
-        </h3>
-
-        <p className="text-sm text-fg-muted">
-          {formatDateTime(event.fecha)} · {event.lugar}
-        </p>
-      </header>
-
-      <p className="line-clamp-3 text-sm text-fg-muted">{event.descripcion}</p>
-
-      <AforoBar inscritos={event.inscritos} cupoMaximo={event.cupoMaximo} className="mt-auto" />
-
-      <div className="flex items-center gap-3">
-        {/* Ámbar: única acción de inscripción de la tarjeta. */}
-        <button
-          type="button"
-          disabled={lleno}
-          className="rounded-pill bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition-colors hover:bg-accent-hover disabled:cursor-not-allowed disabled:bg-card-muted disabled:text-fg-subtle"
-        >
-          {lleno ? 'Sin cupos' : 'Inscribirme'}
-        </button>
-
-        <Link
-          to={eventoDetalle(event.id)}
-          className="text-sm font-medium text-primary hover:text-primary-hover"
-        >
-          Ver detalle
+      <h3 className="mt-4 font-serif text-title font-semibold leading-snug">
+        <Link to={destino} className="transition-colors hover:text-primary">
+          {event.titulo}
         </Link>
+      </h3>
+
+      <dl className="mt-3 space-y-1.5 text-sm text-fg-muted">
+        <div className="flex items-center gap-2">
+          <dt className="sr-only">Fecha</dt>
+          <CalendarIcon />
+          <dd>{formatDateTime(event.fecha)}</dd>
+        </div>
+        <div className="flex items-center gap-2">
+          <dt className="sr-only">Lugar</dt>
+          <PinIcon />
+          <dd>{event.lugar}</dd>
+        </div>
+      </dl>
+
+      {event.descripcion && (
+        <p className="mt-3 line-clamp-2 text-sm text-fg-muted">{event.descripcion}</p>
+      )}
+
+      <div className="mt-auto pt-6">
+        <AforoBar
+          inscritos={event.inscritos}
+          cupoMaximo={event.cupoMaximo}
+          cuposDisponibles={event.cuposDisponibles}
+          className="border-t border-edge pt-4"
+        />
+
+        <div className="mt-4 flex items-center gap-3">
+          {/* Ámbar: única acción de acento de la tarjeta. La inscripción se
+              completa en el detalle, que es donde vive el formulario. */}
+          {cerrado ? (
+            <span className="btn flex-1 cursor-not-allowed bg-card-muted text-fg-subtle">
+              {lleno ? 'Sin cupos' : (meta?.label ?? 'No disponible')}
+            </span>
+          ) : (
+            <Link to={destino} className="btn btn-accent flex-1">
+              Inscribirse
+            </Link>
+          )}
+
+          <Link to={destino} className="btn btn-ghost flex-1">
+            Ver detalle
+          </Link>
+        </div>
       </div>
     </article>
   )

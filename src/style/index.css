@@ -4,6 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Entrada del panel lateral. Fuera de `@layer` porque Tailwind poda las reglas
+   de una capa por nombre de clase y un `@keyframes` no tiene ninguno. */
+@keyframes panel-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+@keyframes backdrop-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -16,6 +28,14 @@
     -webkit-font-smoothing: antialiased;
   }
 
+  /*
+   * La voz editorial del sistema: todo titular va en serif por defecto, sin
+   * que cada página tenga que acordarse de poner `font-serif`.
+   */
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+  }
+
   /* El foco siempre es azul institucional, nunca ámbar. */
   :focus-visible {
     outline: 2px solid var(--primary);
@@ -26,13 +46,165 @@
 @layer components {
   /*
    * Chip de categoría. El color se inyecta con la variable `--chip-color`
-   * (ver CATEGORIES en `@constants/categories`). Tailwind v3 no puede aplicar
+   * (ver `colorDeCategoria` en `@constants/categories`). Tailwind v3 no puede aplicar
    * modificadores de opacidad (`/12`) sobre colores declarados como `var(--x)`,
    * así que el fondo al 12 % se resuelve con `color-mix`.
    */
   .chip-cat {
     color: var(--chip-color);
-    border-color: var(--chip-color);
     background-color: color-mix(in srgb, var(--chip-color) 12%, transparent);
+  }
+
+  /*
+   * Botones. Un solo sitio con el tamaño, la forma y los estados, para que
+   * las ocho pantallas no repitan la misma ristra de utilidades.
+   */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-card px-4 py-2.5
+           text-sm font-semibold transition-colors;
+  }
+
+  .btn:disabled {
+    @apply cursor-not-allowed bg-card-muted text-fg-subtle;
+    border-color: transparent;
+  }
+
+  /* Azul institucional: publicar, comentar, navegar. */
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary-hover;
+  }
+
+  /*
+   * Ámbar: **sólo** inscribirse. Siempre en semibold, porque con texto normal
+   * no llega al contraste que pide WCAG AA (ver PALETA.md §4).
+   */
+  .btn-accent {
+    @apply bg-accent text-accent-foreground hover:bg-accent-hover;
+  }
+
+  /* Fantasma: acción secundaria junto a un CTA. Borde azul, fondo del panel. */
+  .btn-ghost {
+    @apply border border-primary bg-transparent text-primary hover:bg-primary-soft;
+  }
+
+  /* Neutro: utilidades del organizador (descargar CSV, alternar tema). */
+  .btn-neutral {
+    @apply border border-edge bg-card font-medium text-fg hover:bg-card-hover;
+  }
+
+  /*
+   * Campos. El sistema pide etiqueta arriba, borde de 1 px y esquinas de 4 px;
+   * el anillo de foco lo pinta la regla global `:focus-visible`.
+   */
+  .field {
+    @apply w-full rounded-card border border-edge bg-card px-3 py-2.5 text-sm text-fg
+           transition-colors placeholder:text-fg-subtle hover:border-edge-strong
+           disabled:cursor-not-allowed disabled:bg-card-muted disabled:text-fg-subtle;
+  }
+
+  .field-invalid {
+    @apply border-danger hover:border-danger;
+  }
+
+  .field-label {
+    @apply block text-sm font-semibold text-fg;
+  }
+
+  /*
+   * Filtro de categoría: píldora que en reposo lleva el color de su propia
+   * categoría en el texto y el borde —la misma variable `--chip-color` que usa
+   * `.chip-cat`, resuelta por `colorDeCategoria`—, y azul institucional cuando
+   * está activa. Nunca ámbar: el ámbar es sólo de inscribirse (PALETA.md §1).
+   *
+   * Un chip sin `--chip-color` («Todos») cae en los neutros del sistema.
+   */
+  .filter-chip {
+    @apply rounded-pill border bg-card px-4 py-1.5 text-sm font-medium transition-colors;
+    color: var(--chip-color, var(--text-muted));
+    border-color: color-mix(in srgb, var(--chip-color, var(--border)) 40%, var(--border));
+  }
+
+  .filter-chip:hover {
+    background-color: color-mix(in srgb, var(--chip-color, var(--border)) 10%, var(--panel));
+    border-color: var(--chip-color, var(--border-strong));
+  }
+
+  /* Repite el hover porque la variante base lo define con la misma
+     especificidad (`.filter-chip:hover`) y si no, el activo se destiñe. */
+  .filter-chip-active,
+  .filter-chip-active:hover {
+    color: var(--on-secondary);
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+  }
+
+  /*
+   * Isotipo de la marca. `logo.png` es tinta negra sobre transparente, así que
+   * se usa como máscara y no como imagen: el color lo pone `currentColor`, de
+   * modo que la marca sigue al tema con un único archivo en vez de una copia
+   * clara y otra oscura. La proporción es la del PNG recortado (390×512).
+   */
+  .brand-mark {
+    aspect-ratio: 390 / 512;
+    background-color: currentColor;
+    -webkit-mask: url('/logo.png') center / contain no-repeat;
+    mask: url('/logo.png') center / contain no-repeat;
+  }
+
+  /* Enlace de texto. */
+  .link {
+    @apply font-medium text-primary transition-colors hover:text-primary-hover;
+  }
+
+  /*
+   * Tarjeta. Profundidad por borde; la sombra sólo aparece al pasar el cursor
+   * («Elevation & Depth» del sistema de diseño).
+   */
+  .surface {
+    @apply rounded-card border border-edge bg-card;
+  }
+
+  /*
+   * Panel lateral. Es un `<dialog>` modal nativo, así que el navegador ya se
+   * encarga del atrapado de foco, de Escape y de dejar inerte el fondo.
+   *
+   * `margin` va en CSS plano y no en `@apply`: el `<dialog>` viene con
+   * `margin: auto` del user-agent y hay que ganarle con la propiedad completa,
+   * sin depender de en qué orden emita Tailwind `m-0` y `ml-auto`.
+   */
+  .side-panel {
+    margin: 0 0 0 auto;
+    @apply h-[100dvh] max-h-[100dvh] w-full max-w-xl border-l border-edge bg-card p-0 text-fg;
+  }
+
+  .side-panel::backdrop {
+    background-color: rgb(9 14 22 / 0.55);
+  }
+
+  .side-panel[open] {
+    animation: panel-in 0.25s ease-out;
+  }
+
+  .side-panel[open]::backdrop {
+    animation: backdrop-in 0.25s ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .side-panel[open],
+    .side-panel[open]::backdrop {
+      animation: none;
+    }
+  }
+}
+
+/*
+ * Entrada de las tarjetas: quien pide menos movimiento ve la rejilla ya puesta.
+ * Va fuera de `@layer` y al final del archivo a propósito: `.animate-fade-up`
+ * es una utilidad, y las utilidades se emiten en `@tailwind utilities` (arriba),
+ * así que sólo ganando por orden de aparición se anula sin subir especificidad.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up {
+    animation: none;
   }
 }
