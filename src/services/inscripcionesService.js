@@ -115,6 +115,11 @@ export async function getAsistentes(eventoId, { q, signal } = {}) {
 
 /**
  * Cancela una inscripción y devuelve el cupo al evento.
+ *
+ * El cupo lo repone el backend, igual que lo descuenta: aquí no se toca ningún
+ * contador. Por eso la vista recarga el listado después en lugar de quitar la
+ * fila en memoria (ver `useAsistentes`).
+ *
  * @param {string | number} inscripcionId
  */
 export const cancelarInscripcion = (inscripcionId) => http.del(`/inscripciones/${inscripcionId}`)

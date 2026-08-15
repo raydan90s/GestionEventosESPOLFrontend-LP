@@ -181,7 +181,7 @@ de forma se haga en un solo sitio.
 | `.field` | Campo de formulario: etiqueta aparte, borde de 1 px, 4 px de radio |
 | `.field-invalid` | Borde rojo; se añade a `.field` cuando hay error |
 | `.field-label` | Etiqueta encima del campo |
-| `.filter-chip` / `.filter-chip-active` | Filtro de categoría del catálogo |
+| `.filter-chip` / `.filter-chip-active` | Filtro del catálogo: gris en reposo, azul institucional puesto (ver §3) |
 | `.chip-cat` | Etiqueta de categoría, coloreada con `--chip-color` (ver §3) |
 | `.link` | Enlace de texto en azul |
 | `.side-panel` | Marco del panel lateral: `<dialog>` a pantalla completa por la derecha, 36 rem de ancho máximo |
@@ -256,6 +256,13 @@ el evento y se lee en caja baja; el distintivo *interrumpe* («CANCELADO», «AG
 lee en versalitas sobre el color del estado. La caja es lo único que los separa de un
 vistazo, así que no se mezclan.
 
+**El color de categoría es de la tarjeta, no del filtro.** La barra del catálogo
+(`.filter-chip`) va en un solo color —gris en reposo, azul institucional la opción puesta—
+aunque cada categoría tenga el suyo. El motivo es que la barra enseña **todas** las
+opciones a la vez: pintar cada una de un color convierte una fila de controles en un
+arcoíris donde lo elegido deja de distinguirse, y el color pasa a decorar en vez de
+informar. En una tarjeta el chip identifica **un** evento y ahí el color sí trabaja.
+
 Lo resuelve [`StatusBadge`](../src/components/StatusBadge.jsx), que además decide **cuál**
 de los dos avisos toca: el estado manda sobre el aforo, porque un evento cancelado no se
 anuncia como agotado aunque no le queden cupos. Un evento activo con cupos no pinta nada.
@@ -281,6 +288,31 @@ Etiqueta **encima** del campo y pista **siempre visible** debajo: nada de placeh
 se van al escribir y dejan al usuario sin saber qué se le pedía. Los campos obligatorios
 llevan un asterisco rojo (`aria-hidden`, porque el `required` del input ya lo dice);
 los opcionales, la palabra «(opcional)» en gris.
+
+### 7. Economía de color: la base manda
+
+**Por defecto, una pantalla se pinta con los colores base: superficies, grises de texto y
+azul.** El ámbar (§1), el rojo (§2) y los `cat-*` (§3) son excepciones que hay que
+justificar una por una, no una paleta a repartir.
+
+La regla práctica, para no tener que decidirlo de nuevo cada vez:
+
+| El color… | Va coloreado | Ejemplo |
+| :--- | :--- | :--- |
+| identifica **un** elemento entre otros | sí | `.chip-cat` en la tarjeta del evento |
+| marca un estado que **corta el flujo** | sí | cancelado, agotado, error |
+| es **la** acción de inscribirse | sí, ámbar | `.btn-accent` |
+| es un **control**: filtro, pestaña, botón de utilidad, opción de una lista | no | `.filter-chip`, `.btn-neutral` |
+
+El caso que más se repite y más se equivoca es el cuarto. Un grupo de controles enseña
+**todas** sus opciones a la vez: si cada una lleva su propio color, la fila se convierte en
+un arcoíris, lo elegido deja de distinguirse y el color pasa a decorar en vez de informar.
+En un grupo de controles sólo destaca **el que está puesto**, y siempre en el mismo azul
+institucional. Por eso la barra de filtros del catálogo va en gris y azul aunque cada
+categoría tenga color propio.
+
+Al añadir un color a una pantalla, la pregunta no es «¿queda bien?» sino **«¿qué dato
+distingue este color que el texto no distinga ya?»**. Si no hay respuesta, va en gris.
 
 ---
 

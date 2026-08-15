@@ -1,44 +1,56 @@
-import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { CatalogoFilters } from '@components/CatalogoFilters'
 import { CrearEventoLink } from '@components/CrearEventoLink'
 import { EventCard } from '@components/EventCard'
-import { CalendarIcon } from '@components/icons'
-import { colorDeCategoria } from '@constants/categories'
-import { CATALOGO_PARAMS } from '@constants/routes'
+import { resolverRango } from '@constants/rangosFecha'
+import { ACTIVO, CATALOGO_PARAMS } from '@constants/routes'
 import { useCategorias } from '@hooks/useCategorias'
 import { useEventos } from '@hooks/useEventos'
-import { cn } from '@utils/cn'
 
 /**
  * Catálogo de eventos (RF "Ver catálogo de eventos", Juliana Burgos).
  *
  * Categorías, eventos y filtrado salen de la API: no hay datos de ejemplo.
- * Los filtros —categoría, rango de fechas y búsqueda— viajan en la query
- * string y los resuelve el backend en SQL.
+ * Los filtros —categoría, fechas, cupo y búsqueda— viajan en la query string y
+ * los resuelve el backend en SQL, porque el catálogo va a crecer y no tiene
+ * sentido descargarlo entero para filtrarlo en memoria.
  *
  * La búsqueda también vive en la URL porque el campo está en la navbar
  * (ver `@components/Navbar`): así las dos vistas comparten un solo estado.
+ *
+ * La barra de filtros es `@components/CatalogoFilters`; aquí sólo se leen los
+ * parámetros, se escriben y se traducen a la consulta.
  */
 export default function CatalogoPage() {
   const [params, setParams] = useSearchParams()
 
-  const busqueda = params.get(CATALOGO_PARAMS.Q) ?? ''
-  const categoriaId = params.get(CATALOGO_PARAMS.CATEGORIA)
-  const desde = params.get(CATALOGO_PARAMS.DESDE) ?? ''
-  const hasta = params.get(CATALOGO_PARAMS.HASTA) ?? ''
-
-  const filtrando = categoriaId !== null || busqueda.trim() !== '' || desde !== '' || hasta !== ''
-  const conFechas = desde !== '' || hasta !== ''
-  // Las fechas llegan como `YYYY-MM-DD`: comparadas como texto ya quedan en orden.
-  const rangoInvalido = desde !== '' && hasta !== '' && hasta < desde
+  const filtros = {
+    q: params.get(CATALOGO_PARAMS.Q) ?? '',
+    categoriaId: params.get(CATALOGO_PARAMS.CATEGORIA),
+    fecha: params.get(CATALOGO_PARAMS.FECHA),
+    desde: params.get(CATALOGO_PARAMS.DESDE) ?? '',
+    hasta: params.get(CATALOGO_PARAMS.HASTA) ?? '',
+    proximos: params.get(CATALOGO_PARAMS.PROXIMOS) === ACTIVO,
+    disponibles: params.get(CATALOGO_PARAMS.DISPONIBLES) === ACTIVO,
+  }
 
   /*
-   * El rango de fechas se despliega desde el botón del calendario en vez de
-   * ocupar una franja permanente: filtrar por categoría es lo habitual y por
-   * fecha, la excepción. Arranca abierto si la URL ya trae fechas, para que un
-   * enlace compartido no esconda el filtro que lleva puesto.
+   * El rango que se consulta. Un atajo (`fecha=semana`) se resuelve aquí, en el
+   * render, y no al pulsarlo: guardado en la URL como fechas concretas, un
+   * enlace compartido hoy seguiría filtrando por la semana pasada mañana.
    */
-  const [fechasAbiertas, setFechasAbiertas] = useState(conFechas)
+  const { desde, hasta } = resolverRango(filtros.fecha, filtros)
+
+  const filtrando =
+    filtros.categoriaId !== null ||
+    filtros.q.trim() !== '' ||
+    filtros.proximos ||
+    filtros.disponibles ||
+    desde !== '' ||
+    hasta !== ''
+  const conFechas = desde !== '' || hasta !== ''
+  // Las fechas son `YYYY-MM-DD`: comparadas como texto ya quedan en orden.
+  const rangoInvalido = desde !== '' && hasta !== '' && hasta < desde
 
   const { categorias } = useCategorias()
   /*
@@ -48,13 +60,17 @@ export default function CatalogoPage() {
    * petición condenada.
    */
   const { eventos, cargando, error, recargar } = useEventos({
-    categoriaId,
-    q: busqueda,
+    categoriaId: filtros.categoriaId,
+    q: filtros.q,
     desde: rangoInvalido ? '' : desde,
     hasta: rangoInvalido ? '' : hasta,
+    soloProximos: filtros.proximos,
+    soloDisponibles: filtros.disponibles,
   })
   // El id de la URL es texto y el de la API número: se comparan como texto.
-  const categoriaActiva = categorias.find((categoria) => String(categoria.id) === categoriaId)
+  const categoriaActiva = categorias.find(
+    (categoria) => String(categoria.id) === filtros.categoriaId,
+  )
 
   /*
    * Recuento del encabezado. Vacío mientras se carga o si algo falla: el error
@@ -68,28 +84,30 @@ export default function CatalogoPage() {
         (categoriaActiva ? ` en ${categoriaActiva.nombre}` : '')
 
   /**
-   * Escribe un filtro en la query string; un valor vacío lo quita. Sirve para
-   * los tres (categoría, desde y hasta) porque todos viven en la misma URL.
+   * Escribe filtros en la query string; un valor vacío o nulo los quita.
+   *
+   * Acepta varios de golpe porque algunos cambios son atómicos: elegir el atajo
+   * «esta semana» pone `fecha` y borra `desde`/`hasta` en la misma pasada, y
+   * hacerlo en dos llamadas dejaría la URL medio escrita entre renders.
+   *
+   * @param {Record<string, string | number | null>} cambios
    */
-  const filtrar = (clave, valor) => {
+  const filtrar = (cambios) => {
     const siguientes = new URLSearchParams(params)
 
-    if (valor === null || valor === '') siguientes.delete(clave)
-    else siguientes.set(clave, String(valor))
+    for (const [clave, valor] of Object.entries(cambios)) {
+      if (valor === null || valor === '') siguientes.delete(clave)
+      else siguientes.set(clave, String(valor))
+    }
 
     setParams(siguientes, { replace: true })
   }
 
-  const limpiar = () => {
-    setParams(new URLSearchParams(), { replace: true })
-    setFechasAbiertas(false)
-  }
+  const limpiar = () => setParams(new URLSearchParams(), { replace: true })
 
   return (
     <section>
-      {/* `mb-8` se funde con el `my-8` de la franja de filtros cuando la hay, y
-          mantiene la separación con la rejilla cuando no. */}
-      <header className="mb-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+      <header className="mb-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-1">
           <h1 className="font-serif text-headline font-semibold md:text-display">
             Catálogo de eventos
@@ -109,104 +127,22 @@ export default function CatalogoPage() {
           </p>
         </div>
 
-        {/*
-          Fila de filtros: los chips de categoría y, al final, el botón que
-          despliega el rango de fechas. Las categorías vienen de la API; si aún
-          no cargan, sólo queda el botón del calendario.
-        */}
-        <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-          {categorias.length > 0 && (
-            <>
-              <FiltroChip
-                active={categoriaId === null}
-                onClick={() => filtrar(CATALOGO_PARAMS.CATEGORIA, null)}
-              >
-                Todos
-              </FiltroChip>
-
-              {categorias.map((categoria) => (
-                <FiltroChip
-                  key={categoria.id}
-                  color={colorDeCategoria(categoria.nombre)}
-                  active={String(categoria.id) === categoriaId}
-                  onClick={() => filtrar(CATALOGO_PARAMS.CATEGORIA, categoria.id)}
-                >
-                  {categoria.nombre}
-                </FiltroChip>
-              ))}
-            </>
-          )}
-
-          <button
-            type="button"
-            onClick={() => setFechasAbiertas((abiertas) => !abiertas)}
-            aria-expanded={fechasAbiertas}
-            aria-controls="filtro-fechas"
-            aria-label="Filtrar por fechas"
-            className={cn(
-              'btn btn-neutral px-2.5',
-              // Con un rango puesto el botón se queda marcado: el filtro sigue
-              // actuando aunque el panel esté plegado.
-              conFechas && 'border-secondary text-secondary',
-            )}
-          >
-            <CalendarIcon className="h-5 w-5" />
-          </button>
-        </div>
       </header>
 
       {/*
-        Rango de fechas. Va en su propia franja y no entre los chips porque son
-        dos filtros distintos: la categoría es una elección entre pocas opciones
-        y la fecha, un rango que se escribe. Ambos acaban en la misma URL.
-
-        La franja sólo existe cuando hay algo que poner en ella: el rango
-        desplegado, o el botón de limpiar si hay cualquier filtro activo.
+        Franja de filtros. Va a todo el ancho y no dentro del encabezado porque
+        crece: cada filtro nuevo cabe en la fila sin empujar el título, y el
+        resumen de lo puesto aparece debajo cuando hay algo que resumir.
       */}
-      {(fechasAbiertas || filtrando) && (
-        <div
-          id="filtro-fechas"
-          className="my-8 flex flex-wrap items-end gap-x-4 gap-y-3 border-y border-edge py-4"
-        >
-          {fechasAbiertas && (
-            <>
-              <FiltroFecha
-                id="fecha-desde"
-                label="Desde"
-                value={desde}
-                max={hasta || undefined}
-                onChange={(valor) => filtrar(CATALOGO_PARAMS.DESDE, valor)}
-              />
-
-              <FiltroFecha
-                id="fecha-hasta"
-                label="Hasta"
-                value={hasta}
-                min={desde || undefined}
-                onChange={(valor) => filtrar(CATALOGO_PARAMS.HASTA, valor)}
-                invalid={rangoInvalido}
-              />
-            </>
-          )}
-
-          {filtrando && (
-            <button type="button" onClick={limpiar} className="link py-2.5 text-sm">
-              Limpiar filtros
-            </button>
-          )}
-
-          {/*
-            El navegador ya impide elegir un rango al revés con `min`/`max`, pero
-            la URL se puede escribir a mano: si llega invertido, se dice en vez de
-            devolver una rejilla vacía sin explicación.
-          */}
-          {rangoInvalido && (
-            <p role="alert" className="w-full text-xs text-danger">
-              La fecha final es anterior a la inicial: ningún evento puede coincidir.
-            </p>
-          )}
-        </div>
-      )}
+      <div className="mb-8 border-y border-edge py-4">
+        <CatalogoFilters
+          categorias={categorias}
+          filtros={filtros}
+          rangoInvalido={rangoInvalido}
+          onFiltrar={filtrar}
+          onLimpiar={limpiar}
+        />
+      </div>
 
       {error ? (
         <div className="surface space-y-3 bg-danger-soft px-4 py-10 text-center">
@@ -232,54 +168,6 @@ export default function CatalogoPage() {
         </div>
       )}
     </section>
-  )
-}
-
-/**
- * Filtro de categoría. En reposo lleva el color de su categoría; activo, el
- * azul institucional, nunca el ámbar. «Todos» va sin color y usa los neutros.
- *
- * El color se pasa como `--chip-color` y lo resuelve `.filter-chip` en CSS: es
- * la misma variable que consume el chip de la tarjeta, así que una categoría se
- * ve del mismo color en el filtro y en el evento.
- */
-function FiltroChip({ active, color, onClick, children }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      style={color ? { '--chip-color': color } : undefined}
-      className={cn('filter-chip', active && 'filter-chip-active')}
-    >
-      {children}
-    </button>
-  )
-}
-
-/**
- * Un extremo del rango de fechas. `min`/`max` los pone quien lo usa con el otro
- * extremo, para que el propio calendario del navegador no deje invertirlo.
- */
-function FiltroFecha({ id, label, value, onChange, min, max, invalid }) {
-  return (
-    <div className="space-y-1.5">
-      <label htmlFor={id} className="field-label text-xs font-medium text-fg-muted">
-        {label}
-      </label>
-
-      <input
-        id={id}
-        type="date"
-        value={value}
-        min={min}
-        max={max}
-        onChange={(campo) => onChange(campo.target.value)}
-        aria-invalid={invalid ? true : undefined}
-        // `w-auto` gana a `w-full` de `.field`: aquí el campo no ocupa la fila.
-        className={cn('field w-auto', invalid && 'field-invalid')}
-      />
-    </div>
   )
 }
 

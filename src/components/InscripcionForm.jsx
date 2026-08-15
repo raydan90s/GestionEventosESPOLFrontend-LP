@@ -31,9 +31,15 @@ export function InscripcionForm({ eventoId, cuposDisponibles, onInscrito }) {
           Inscripción confirmada
         </h2>
 
+        {/*
+          Se dice sólo lo que de verdad ocurrió: el registro quedó guardado. No se
+          promete ningún correo de confirmación, porque el envío automatizado de
+          correos está fuera del alcance de la propuesta y el backend no manda
+          ninguno. El correo se repite como referencia de lo que se guardó.
+        */}
         <p className="text-sm text-fg">
-          {registro.nombre}, tu lugar en <strong>{registro.eventoTitulo}</strong> quedó
-          registrado. Enviamos la confirmación a <strong>{registro.correo}</strong>.
+          Guardamos tu inscripción a <strong>{registro.eventoTitulo}</strong> a nombre de{' '}
+          {registro.nombre} ({registro.correo}).
         </p>
 
         <p className="text-sm text-fg-muted">

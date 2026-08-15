@@ -16,12 +16,29 @@ import { formatDateTime } from '@utils/formatDate'
 export default function AsistentesPage() {
   const { id } = useParams()
   const [busqueda, setBusqueda] = useState('')
-  const { evento, asistentes, total, cargando, error } = useAsistentes(id, busqueda)
+  const {
+    evento,
+    asistentes,
+    total,
+    cargando,
+    error,
+    recargar,
+    cancelar,
+    cancelandoId,
+    errorCancelar,
+  } = useAsistentes(id, busqueda)
+
+  const filtrando = busqueda.trim() !== ''
 
   /**
    * Descarga el listado visible como CSV, para el control logístico en puerta.
    * El armado del texto es puro y vive en `@utils/csv`; aquí queda sólo el
    * efecto de descarga, que no puede estar en `utils/`.
+   *
+   * Exporta **lo que hay en pantalla**: con una búsqueda puesta salen sólo las
+   * coincidencias. Por eso, cuando hay filtro, cambian tanto la etiqueta del
+   * botón como el nombre del archivo; bajar el CSV en la puerta creyendo que
+   * lleva la lista completa cuando no es así es un problema real.
    */
   const descargarCsv = () => {
     const filas = asistentes.map((asistente) => ({
@@ -37,7 +54,9 @@ export default function AsistentesPage() {
     const enlace = document.createElement('a')
 
     enlace.href = url
-    enlace.download = `asistentes-evento-${id}.csv`
+    enlace.download = filtrando
+      ? `asistentes-evento-${id}-coincidencias.csv`
+      : `asistentes-evento-${id}.csv`
     enlace.click()
 
     URL.revokeObjectURL(url)
@@ -60,18 +79,29 @@ export default function AsistentesPage() {
           </p>
         </div>
 
+        {/*
+          `cuposDisponibles` viaja explícito: es la cifra que calcula la misma
+          transacción que descuenta el cupo, y aquí importa de más porque dar de
+          baja a alguien lo devuelve. Restarlo en el cliente sería decidir el
+          aforo por nuestra cuenta.
+        */}
         {evento && (
           <AforoBar
             inscritos={evento.inscritos}
             cupoMaximo={evento.cupoMaximo}
+            cuposDisponibles={evento.cuposDisponibles}
             className="max-w-md"
           />
         )}
       </header>
 
-      {error && (
+      {/*
+        La baja falla aparte de la carga: el listado que se está viendo sigue
+        siendo válido, así que se avisa sin tirar la tabla.
+      */}
+      {errorCancelar && (
         <p role="alert" className="rounded-card bg-danger-soft px-4 py-3 text-sm text-danger">
-          {error}
+          {errorCancelar}
         </p>
       )}
 
@@ -95,17 +125,40 @@ export default function AsistentesPage() {
           className="btn btn-neutral"
         >
           <DownloadIcon />
-          Descargar CSV
+          {filtrando ? 'Descargar coincidencias' : 'Descargar CSV'}
         </button>
       </div>
 
-      <p className="text-sm text-fg-muted" aria-live="polite">
-        {busqueda.trim()
-          ? `${total} ${total === 1 ? 'coincidencia' : 'coincidencias'}`
-          : `${total} ${total === 1 ? 'persona inscrita' : 'personas inscritas'}`}
+      {/*
+        Siempre en el DOM aunque esté vacío: un `aria-live` que aparece a la vez
+        que su texto no se anuncia de forma fiable.
+      */}
+      <p className="min-h-5 text-sm text-fg-muted" aria-live="polite">
+        {error
+          ? ''
+          : filtrando
+            ? `${total} ${total === 1 ? 'coincidencia' : 'coincidencias'}. El CSV exporta sólo estas.`
+            : `${total} ${total === 1 ? 'persona inscrita' : 'personas inscritas'}`}
       </p>
 
-      <AsistentesTable asistentes={asistentes} cargando={cargando} busqueda={busqueda} />
+      {error ? (
+        <div className="surface space-y-3 bg-danger-soft px-4 py-10 text-center">
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+          <button type="button" onClick={recargar} className="link text-sm">
+            Reintentar
+          </button>
+        </div>
+      ) : (
+        <AsistentesTable
+          asistentes={asistentes}
+          cargando={cargando}
+          busqueda={busqueda}
+          onCancelar={(asistente) => cancelar(asistente.id)}
+          cancelandoId={cancelandoId}
+        />
+      )}
     </section>
   )
 }

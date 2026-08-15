@@ -111,31 +111,26 @@
   }
 
   /*
-   * Filtro de categoría: píldora que en reposo lleva el color de su propia
-   * categoría en el texto y el borde —la misma variable `--chip-color` que usa
-   * `.chip-cat`, resuelta por `colorDeCategoria`—, y azul institucional cuando
-   * está activa. Nunca ámbar: el ámbar es sólo de inscribirse (PALETA.md §1).
+   * Filtro del catálogo: píldora neutra en reposo y azul institucional cuando
+   * está puesta. Nunca ámbar: el ámbar es sólo de inscribirse (PALETA.md §1).
    *
-   * Un chip sin `--chip-color` («Todos») cae en los neutros del sistema.
+   * Un solo color a propósito, aunque la categoría tenga el suyo: la barra de
+   * filtros lista todas las opciones a la vez, y pintar cada una de un color
+   * convierte una fila de controles en un arcoíris donde no se distingue cuál
+   * está elegida. El color de categoría se reserva a `.chip-cat`, donde
+   * identifica **un** evento (PALETA.md §3).
    */
   .filter-chip {
-    @apply rounded-pill border bg-card px-4 py-1.5 text-sm font-medium transition-colors;
-    color: var(--chip-color, var(--text-muted));
-    border-color: color-mix(in srgb, var(--chip-color, var(--border)) 40%, var(--border));
-  }
-
-  .filter-chip:hover {
-    background-color: color-mix(in srgb, var(--chip-color, var(--border)) 10%, var(--panel));
-    border-color: var(--chip-color, var(--border-strong));
+    @apply rounded-pill border border-edge bg-card px-4 py-1.5 text-sm font-medium
+           text-fg-muted transition-colors hover:border-edge-strong hover:bg-card-hover
+           hover:text-fg;
   }
 
   /* Repite el hover porque la variante base lo define con la misma
      especificidad (`.filter-chip:hover`) y si no, el activo se destiñe. */
   .filter-chip-active,
   .filter-chip-active:hover {
-    color: var(--on-secondary);
-    background-color: var(--secondary);
-    border-color: var(--secondary);
+    @apply border-secondary bg-secondary text-secondary-foreground;
   }
 
   /*

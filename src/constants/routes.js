@@ -17,9 +17,23 @@ export const ROUTES = Object.freeze({
 export const CATALOGO_PARAMS = Object.freeze({
   Q: 'q',
   CATEGORIA: 'categoria',
+  /** Atajo de rango (`hoy`, `semana`…) o `personalizado`; ver `@constants/rangosFecha`. */
+  FECHA: 'fecha',
   DESDE: 'desde',
   HASTA: 'hasta',
+  /** Sólo eventos que aún no han ocurrido. */
+  PROXIMOS: 'proximos',
+  /** Sólo eventos con cupo libre. */
+  DISPONIBLES: 'disponibles',
 })
+
+/**
+ * Valor con el que un filtro de sí/no viaja en la URL.
+ *
+ * Se guarda el `1` y se omite el `0`: un parámetro presente es el filtro
+ * puesto, y así la URL sin filtros queda literalmente vacía.
+ */
+export const ACTIVO = '1'
 
 /**
  * Construye la ruta de detalle de un evento.

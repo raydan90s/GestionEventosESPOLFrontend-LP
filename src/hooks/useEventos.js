@@ -18,7 +18,7 @@ const DEBOUNCE_MS = 300
  * render se recrearía en cada pasada y dispararía la petición en bucle.
  *
  * @param {{ categoriaId?: number|string|null, q?: string, desde?: string,
- *           hasta?: string, soloProximos?: boolean }} [filtros]
+ *           hasta?: string, soloProximos?: boolean, soloDisponibles?: boolean }} [filtros]
  */
 export function useEventos({
   categoriaId = null,
@@ -26,6 +26,7 @@ export function useEventos({
   desde = '',
   hasta = '',
   soloProximos = false,
+  soloDisponibles = false,
 } = {}) {
   const [eventos, setEventos] = useState(/** @type {import('@/types/event').Event[]} */ ([]))
   const [cargando, setCargando] = useState(true)
@@ -49,7 +50,14 @@ export function useEventos({
 
         try {
           const lista = await getEvents(
-            { categoriaId: categoriaId ?? undefined, q: termino, desde, hasta, soloProximos },
+            {
+              categoriaId: categoriaId ?? undefined,
+              q: termino,
+              desde,
+              hasta,
+              soloProximos,
+              soloDisponibles,
+            },
             { signal: controlador.signal },
           )
           setEventos(lista)
@@ -70,7 +78,7 @@ export function useEventos({
       clearTimeout(temporizador)
       controlador.abort()
     }
-  }, [categoriaId, contador, desde, hasta, q, soloProximos])
+  }, [categoriaId, contador, desde, hasta, q, soloDisponibles, soloProximos])
 
   return { eventos, cargando, error, recargar }
 }

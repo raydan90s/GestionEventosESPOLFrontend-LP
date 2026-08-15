@@ -29,8 +29,14 @@ const COLOR_POR_PALABRA = Object.freeze([
 /** Color de una categoría que la paleta todavía no contempla. */
 export const COLOR_CATEGORIA_RESERVA = 'var(--cat-otra)'
 
-/** Minúsculas y sin tildes, para que el emparejamiento no dependa del acento. */
-const normalizar = (texto) =>
+/**
+ * Minúsculas y sin tildes, para que el emparejamiento no dependa del acento.
+ *
+ * Se exporta porque el buscador de categorías del catálogo necesita comparar
+ * igual que se comparan aquí: escribir «deportes» tiene que encontrar
+ * «Deportes» y «música», «Musica».
+ */
+export const normalizar = (texto) =>
   String(texto ?? '')
     .toLowerCase()
     .normalize('NFD')

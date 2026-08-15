@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { getAsistentes } from '@services/inscripcionesService'
+import { mensajeDeError } from '@services/apiErrors'
+import { cancelarInscripcion, getAsistentes } from '@services/inscripcionesService'
 
 /** Espera antes de consultar mientras el organizador sigue escribiendo. */
 const DEBOUNCE_MS = 300
@@ -27,6 +28,11 @@ export function useAsistentes(eventoId, busqueda = '') {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(/** @type {string | null} */ (null))
 
+  // Id de la inscripción que se está dando de baja, para bloquear su fila y que
+  // no se pueda pulsar dos veces. Es uno solo: se cancela de una en una.
+  const [cancelandoId, setCancelandoId] = useState(/** @type {number | null} */ (null))
+  const [errorCancelar, setErrorCancelar] = useState(/** @type {string | null} */ (null))
+
   // Cambiarlo fuerza una recarga sin tocar los parámetros de la consulta.
   const [contador, setContador] = useState(0)
   const recargar = useCallback(() => setContador((n) => n + 1), [])
@@ -35,8 +41,16 @@ export function useAsistentes(eventoId, busqueda = '') {
   // tabla anterior visible para que la vista no parpadee en cada tecla.
   const primeraCarga = useRef(true)
 
+  /*
+   * Sin id no hay nada que pedir. `cargando` se apaga por cálculo y no con un
+   * `setCargando(false)` en la salida temprana del efecto: si el estado se
+   * quedara en `true` —su valor inicial— la tabla enseñaría los esqueletos para
+   * siempre. Hoy la ruta siempre trae id, así que esto es un seguro.
+   */
+  const sinId = eventoId === undefined || eventoId === null || eventoId === ''
+
   useEffect(() => {
-    if (eventoId === undefined || eventoId === null || eventoId === '') return undefined
+    if (sinId) return undefined
 
     const controlador = new AbortController()
     const termino = busqueda.trim()
@@ -73,7 +87,44 @@ export function useAsistentes(eventoId, busqueda = '') {
       clearTimeout(temporizador)
       controlador.abort()
     }
-  }, [busqueda, contador, eventoId])
+  }, [busqueda, contador, eventoId, sinId])
 
-  return { evento, asistentes, total, cargando, error, recargar }
+  /**
+   * Da de baja una inscripción y devuelve el cupo al evento.
+   *
+   * Al terminar se recarga en vez de quitar la fila en memoria: el `DELETE`
+   * también cambia el aforo, y el resumen del encabezado sale de la misma
+   * respuesta que el listado. Descontarlo aquí sería volver a decidir cupos en
+   * el cliente, que es justo lo que este módulo no hace.
+   *
+   * @param {number} inscripcionId
+   */
+  const cancelar = useCallback(
+    async (inscripcionId) => {
+      setCancelandoId(inscripcionId)
+      setErrorCancelar(null)
+
+      try {
+        await cancelarInscripcion(inscripcionId)
+        recargar()
+      } catch (fallo) {
+        setErrorCancelar(mensajeDeError(fallo, 'No se pudo cancelar la inscripción.'))
+      } finally {
+        setCancelandoId(null)
+      }
+    },
+    [recargar],
+  )
+
+  return {
+    evento,
+    asistentes,
+    total,
+    cargando: cargando && !sinId,
+    error,
+    recargar,
+    cancelar,
+    cancelandoId,
+    errorCancelar,
+  }
 }

@@ -1,7 +1,7 @@
 /**
  * Iconos de la interfaz, en SVG inline.
  *
- * No hay librería de iconos: son ocho trazos y una dependencia menos que
+ * No hay librería de iconos: son unos trazos sueltos y una dependencia menos que
  * cargar. Todos heredan el color con `currentColor` y el tamaño con `em`, así
  * que se tiñen y se escalan con las clases del texto que los acompaña.
  *
@@ -66,6 +66,18 @@ export const UsersIcon = (props) => (
 export const DownloadIcon = (props) => (
   <Svg {...props}>
     <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 19h16" />
+  </Svg>
+)
+
+export const ChevronDownIcon = (props) => (
+  <Svg {...props}>
+    <path d="m6 9 6 6 6-6" />
+  </Svg>
+)
+
+export const CheckIcon = (props) => (
+  <Svg {...props}>
+    <path d="m5 13 4 4L19 7" />
   </Svg>
 )
 
