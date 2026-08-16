@@ -3,7 +3,7 @@ import { EventoForm } from '@components/EventoForm'
 import { SidePanel } from '@components/SidePanel'
 import { eventoDetalle } from '@constants/routes'
 import { useEvento } from '@hooks/useEvento'
-import { updateEvent } from '@services/eventsService'
+import { updateEvent, uploadEventImage } from '@services/eventsService'
 import { toDatetimeLocal } from '@utils/apiDate'
 
 /**
@@ -30,12 +30,31 @@ export default function EventoEditarPage({ id }) {
     else navegar(eventoDetalle(id), { replace: true })
   }
 
-  const guardar = async (valores) => {
+  const guardar = async (valores, archivoImagen) => {
     await updateEvent(id, valores)
+
+    let imagenFallida = false
+    if (archivoImagen) {
+      try {
+        await uploadEventImage(id, archivoImagen)
+      } catch {
+        imagenFallida = true
+      }
+    }
+
     // `replace`: igual que al crear, «atrás» no debe reabrir un panel ya enviado.
     // `eventoActualizado` en el state: la página de detalle no se desmonta en
     // este viaje de ida y vuelta, así que necesita el aviso para recargar.
-    navegar(eventoDetalle(id), { replace: true, state: { eventoActualizado: true } })
+    navegar(eventoDetalle(id), {
+      replace: true,
+      state: {
+        eventoActualizado: true,
+        ...(imagenFallida && {
+          imagenFallida: true,
+          mensajeImagen: 'Los cambios se guardaron, pero la imagen no se pudo subir.',
+        }),
+      },
+    })
   }
 
   return (
@@ -61,6 +80,7 @@ export default function EventoEditarPage({ id }) {
             cupoMaximo: String(evento.cupoMaximo),
             organizador: evento.organizador,
           }}
+          imagenActual={evento.imagenUrl}
           textoAyuda="Los cambios quedan publicados apenas los guardes."
           textoBoton="Guardar cambios"
           textoEnviando="Guardando…"

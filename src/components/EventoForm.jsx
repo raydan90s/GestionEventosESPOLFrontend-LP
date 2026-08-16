@@ -1,9 +1,13 @@
-import { useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import { FormField } from '@components/FormField'
+import { assetUrl } from '@config/api'
 import { useCategorias } from '@hooks/useCategorias'
 import { mensajeDeError } from '@services/apiErrors'
 import { erroresDeCampo } from '@services/eventsService'
 import { cn } from '@utils/cn'
+
+/** Tipos de imagen aceptados; el backend los revalida por contenido, no por nombre. */
+const TIPOS_IMAGEN = 'image/jpeg,image/png,image/webp'
 
 /** Formulario vacío, punto de partida al crear. */
 const EVENTO_VACIO = Object.freeze({
@@ -28,17 +32,23 @@ const EVENTO_VACIO = Object.freeze({
  * No incluye el `SidePanel`: cada página decide su propio título y lo envuelve
  * ella misma, igual que hacía `EventoNuevoPage` antes de este refactor.
  *
+ * La imagen viaja aparte: `onGuardar` recibe también el archivo elegido (o
+ * `null`) y decide qué hacer con él, porque subirla es una petición distinta
+ * a crear o actualizar el evento (ver `uploadEventImage`).
+ *
  * @param {{
  *   valoresIniciales?: typeof EVENTO_VACIO,
+ *   imagenActual?: string,
  *   textoAyuda: string,
  *   textoBoton: string,
  *   textoEnviando: string,
- *   onGuardar: (valores: typeof EVENTO_VACIO) => Promise<unknown>,
+ *   onGuardar: (valores: typeof EVENTO_VACIO, archivoImagen: File | null) => Promise<unknown>,
  *   onCancelar: () => void,
  * }} props
  */
 export function EventoForm({
   valoresIniciales = EVENTO_VACIO,
+  imagenActual = '',
   textoAyuda,
   textoBoton,
   textoEnviando,
@@ -46,11 +56,36 @@ export function EventoForm({
   onCancelar,
 }) {
   const { categorias, cargando: cargandoCategorias } = useCategorias()
+  const idImagen = useId()
 
   const [valores, setValores] = useState(valoresIniciales)
   const [enviando, setEnviando] = useState(false)
   const [errores, setErrores] = useState(/** @type {Record<string, string>} */ ({}))
   const [error, setError] = useState(/** @type {string | null} */ (null))
+
+  const [archivoImagen, setArchivoImagen] = useState(/** @type {File | null} */ (null))
+  const [previsualizacion, setPrevisualizacion] = useState('')
+
+  // El `object URL` de la previsualización es un recurso del navegador: hay
+  // que liberarlo al cambiar de archivo o al desmontar, o gotea memoria.
+  useEffect(() => {
+    return () => {
+      if (previsualizacion) URL.revokeObjectURL(previsualizacion)
+    }
+  }, [previsualizacion])
+
+  const elegirImagen = (evento) => {
+    const archivo = evento.target.files?.[0] ?? null
+    setArchivoImagen(archivo)
+    setPrevisualizacion((anterior) => {
+      if (anterior) URL.revokeObjectURL(anterior)
+      return archivo ? URL.createObjectURL(archivo) : ''
+    })
+  }
+
+  // Lo que se ve en la previsualización: el archivo recién elegido si hay
+  // uno, si no la imagen que ya tenía el evento (al editar).
+  const vistaPrevia = previsualizacion || (imagenActual ? assetUrl(imagenActual) : '')
 
   /** Actualiza un campo y limpia su error, para que desaparezca al corregirlo. */
   const cambiar = (campo, valor) => {
@@ -74,7 +109,7 @@ export function EventoForm({
       // `onGuardar` hace la llamada a la API y navega al terminar: si no
       // lanza, este formulario está a punto de desmontarse y no hace falta
       // apagar `enviando`.
-      await onGuardar(valores)
+      await onGuardar(valores, archivoImagen)
     } catch (fallo) {
       const porCampo = erroresDeCampo(fallo)
 
@@ -229,6 +264,41 @@ export function EventoForm({
             placeholder="Capítulo ACM ESPOL"
             maxLength={120}
           />
+        </fieldset>
+
+        <fieldset className="space-y-4 border-t border-edge pt-8">
+          <legend className="mb-4 text-label font-semibold uppercase text-fg-muted">Imagen</legend>
+
+          <div className="space-y-1.5">
+            <label htmlFor={idImagen} className="field-label">
+              Imagen del evento
+              <span className="ml-1 font-normal text-fg-subtle">(opcional)</span>
+            </label>
+
+            {/* Aspecto fijo para que la previsualización no salte al elegir
+                una foto de otra proporción; mismo tratamiento que la tarjeta
+                del catálogo (EventCard). */}
+            {vistaPrevia && (
+              <img
+                src={vistaPrevia}
+                alt=""
+                className="aspect-video w-full max-w-xs rounded-card border border-edge object-cover"
+              />
+            )}
+
+            <input
+              id={idImagen}
+              type="file"
+              accept={TIPOS_IMAGEN}
+              onChange={elegirImagen}
+              disabled={enviando}
+              className="field cursor-pointer file:mr-3 file:cursor-pointer file:rounded-card
+                         file:border-0 file:bg-card-muted file:px-3 file:py-1.5 file:text-sm
+                         file:font-medium"
+            />
+
+            <p className="text-xs text-fg-subtle">JPEG, PNG o WEBP. Máximo 2 MB.</p>
+          </div>
         </fieldset>
       </div>
 

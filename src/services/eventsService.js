@@ -31,6 +31,9 @@ export const toEvent = (row) => ({
   cuposDisponibles: Number(row.cupos_disponibles ?? 0),
   inscritos: Number(row.inscritos ?? 0),
   organizador: String(row.organizador ?? ''),
+  // Nullable en la base: la condición evita que un `null` se convierta en
+  // la cadena literal "null" al envolverlo en `String()`.
+  imagenUrl: row.imagen_url ? String(row.imagen_url) : '',
   estado: String(row.estado ?? ''),
 })
 
@@ -158,6 +161,25 @@ export async function updateEvent(id, datos) {
  */
 export async function deleteEvent(id) {
   await http.del(`/eventos/${id}`)
+}
+
+/**
+ * Sube la imagen de un evento ya creado. Va separada de `createEvent` y
+ * `updateEvent` porque es un endpoint aparte (`multipart/form-data`, no
+ * JSON): así los dos siguen enviando JSON como siempre y no hay que
+ * convertir todo el formulario a multipart por un campo opcional.
+ *
+ * @param {string | number} id
+ * @param {File} archivo
+ * @returns {Promise<import('@/types/event').Event>}
+ */
+export async function uploadEventImage(id, archivo) {
+  const formData = new FormData()
+  formData.append('imagen', archivo)
+
+  const respuesta = await http.upload(`/eventos/${id}/imagen`, formData)
+
+  return toEvent(respuesta.data)
 }
 
 /** Traduce el nombre de campo de la API al del formulario de evento. */

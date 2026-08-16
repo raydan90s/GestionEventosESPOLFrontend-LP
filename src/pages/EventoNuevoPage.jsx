@@ -2,7 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { EventoForm } from '@components/EventoForm'
 import { SidePanel } from '@components/SidePanel'
 import { ROUTES, eventoDetalle } from '@constants/routes'
-import { createEvent } from '@services/eventsService'
+import { createEvent, uploadEventImage } from '@services/eventsService'
 
 /**
  * Creación de un evento (RF "Crear evento", Juliana Burgos).
@@ -28,11 +28,28 @@ export default function EventoNuevoPage() {
     else navegar(ROUTES.CATALOGO, { replace: true })
   }
 
-  const guardar = async (valores) => {
+  const guardar = async (valores, archivoImagen) => {
     const creado = await createEvent(valores)
+
+    // El evento ya existe aunque la imagen falle: no se muestra un error de
+    // creación que sería mentira, sino un aviso aparte en el detalle.
+    let imagenFallida = false
+    if (archivoImagen) {
+      try {
+        await uploadEventImage(creado.id, archivoImagen)
+      } catch {
+        imagenFallida = true
+      }
+    }
+
     // `replace`: el panel deja de existir, así que «atrás» debe llevar a la
     // vista desde la que se abrió y no reabrir un formulario ya enviado.
-    navegar(eventoDetalle(creado.id), { replace: true })
+    navegar(eventoDetalle(creado.id), {
+      replace: true,
+      state: imagenFallida
+        ? { imagenFallida: true, mensajeImagen: 'El evento se creó, pero la imagen no se pudo subir.' }
+        : undefined,
+    })
   }
 
   return (

@@ -6,6 +6,7 @@ import { ComentariosSection } from '@components/ComentariosSection'
 import { InscripcionForm } from '@components/InscripcionForm'
 import { StatusBadge } from '@components/StatusBadge'
 import { ArrowLeftIcon, CalendarIcon, PinIcon, UsersIcon } from '@components/icons'
+import { assetUrl } from '@config/api'
 import { EVENT_STATUS, EVENT_STATUS_META } from '@constants/eventStatus'
 import { ROUTES, eventoAsistentes, eventoEditar } from '@constants/routes'
 import { useEvento } from '@hooks/useEvento'
@@ -80,6 +81,13 @@ export default function EventoDetallePage() {
         <AccionesOrganizador evento={evento} />
       </div>
 
+      {/* Aviso aparte, no un error: el evento en sí se guardó bien. */}
+      {location.state?.imagenFallida && (
+        <p role="alert" className="surface bg-danger-soft px-4 py-3 text-sm text-danger">
+          {location.state.mensajeImagen}
+        </p>
+      )}
+
       {/*
         La cabecera va fuera de la rejilla a propósito: si viviera en la columna
         izquierda, en móvil la barra lateral se apilaría entera antes o después
@@ -118,6 +126,14 @@ export default function EventoDetallePage() {
 
       <div className="grid gap-10 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
+          {evento.imagenUrl && (
+            <img
+              src={assetUrl(evento.imagenUrl)}
+              alt=""
+              className="aspect-video w-full rounded-card border border-edge object-cover"
+            />
+          )}
+
           {evento.descripcion && (
             <p className="whitespace-pre-line text-body-lg leading-relaxed text-fg-muted">
               {evento.descripcion}
