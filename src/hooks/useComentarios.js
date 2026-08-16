@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { mensajeDeError } from '@services/apiErrors'
-import { COMENTARIOS_POR_PAGINA, crearComentario, erroresDeCampo, getComentarios } from '@services/comentariosService'
+import { AUTOR_MAX, AUTOR_MIN, COMENTARIO_MAX, COMENTARIO_MIN, COMENTARIOS_POR_PAGINA, crearComentario, erroresDeCampo, getComentarios } from '@services/comentariosService'
 
 /** Formulario vacío. */
 const VACIO = Object.freeze({ autor: '', contenido: '' })
@@ -70,6 +70,24 @@ export function useComentarios(eventoId) {
       setEnviando(true)
       setErrores({})
       setErrorEnvio(null)
+
+      const autorTrim = valores.autor.trim()
+      const contenidoTrim = valores.contenido.trim()
+      const fallosValidacion = {}
+
+      if (autorTrim.length < AUTOR_MIN || autorTrim.length > AUTOR_MAX) {
+        fallosValidacion.autor = `El nombre debe tener entre ${AUTOR_MIN} y ${AUTOR_MAX} caracteres.`
+      }
+
+      if (contenidoTrim.length < COMENTARIO_MIN || contenidoTrim.length > COMENTARIO_MAX) {
+        fallosValidacion.contenido = `El comentario debe tener entre ${COMENTARIO_MIN} y ${COMENTARIO_MAX} caracteres.`
+      }
+
+      if (Object.keys(fallosValidacion).length > 0) {
+        setErrores(fallosValidacion)
+        setEnviando(false)
+        return
+      }
 
       try {
         const creado = await crearComentario(eventoId, valores)

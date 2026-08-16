@@ -66,6 +66,8 @@ export async function crearComentario(eventoId, datos) {
 /** Límites que impone la base: `contenido` es `CHECK (char_length BETWEEN 3 AND 1000)`. */
 export const COMENTARIO_MAX = 1000
 export const COMENTARIO_MIN = 3
+export const AUTOR_MAX = 120
+export const AUTOR_MIN = 3
 
 /** Comentarios que se piden por tanda. */
 export const COMENTARIOS_POR_PAGINA = 20

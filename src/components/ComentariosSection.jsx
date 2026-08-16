@@ -1,5 +1,5 @@
 import { FormField } from '@components/FormField'
-import { COMENTARIO_MAX } from '@services/comentariosService'
+import { COMENTARIO_MAX, COMENTARIO_MIN } from '@services/comentariosService'
 import { useComentarios } from '@hooks/useComentarios'
 import { cn } from '@utils/cn'
 import { formatDateTime } from '@utils/formatDate'
@@ -55,6 +55,9 @@ export function ComentariosSection({ eventoId }) {
         <div className="space-y-1.5">
           <label htmlFor="comentario-contenido" className="field-label">
             Comentario
+            <span aria-hidden="true" className="ml-1 text-danger">
+              *
+            </span>
           </label>
 
           <textarea
@@ -64,6 +67,7 @@ export function ComentariosSection({ eventoId }) {
             value={valores.contenido}
             onChange={(campo) => cambiar('contenido', campo.target.value)}
             disabled={enviando}
+            required
             maxLength={COMENTARIO_MAX}
             placeholder="¿Tienes alguna pregunta sobre este evento?"
             aria-invalid={errores.contenido ? true : undefined}
@@ -77,7 +81,9 @@ export function ComentariosSection({ eventoId }) {
                 {errores.contenido}
               </p>
             ) : (
-              <span />
+              <span className="text-xs text-fg-subtle">
+                Mínimo {COMENTARIO_MIN} caracteres
+              </span>
             )}
 
             <span className="shrink-0 text-xs text-fg-subtle">
