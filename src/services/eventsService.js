@@ -81,16 +81,14 @@ export async function getEvent(id, { signal } = {}) {
 }
 
 /**
- * Crea un evento.
- *
- * `cuposDisponibles` no se envía: el backend lo iguala al aforo máximo al crear.
+ * Payload snake_case común a crear y actualizar: los mismos campos, sólo
+ * cambia a qué endpoint y con qué verbo viajan.
  *
  * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
  *           lugar: string, fecha: string, cupoMaximo: number|string,
  *           organizador?: string }} datos
- * @returns {Promise<import('@/types/event').Event>}
  */
-export async function createEvent(datos) {
+const aPayload = (datos) => {
   const payload = {
     titulo: String(datos.titulo ?? '').trim(),
     categoria_id: Number(datos.categoriaId),
@@ -107,9 +105,49 @@ export async function createEvent(datos) {
     if (valor !== '') payload[campoApi] = valor
   }
 
-  const respuesta = await http.post('/eventos', payload)
+  return payload
+}
+
+/**
+ * Crea un evento.
+ *
+ * `cuposDisponibles` no se envía: el backend lo iguala al aforo máximo al crear.
+ *
+ * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
+ *           lugar: string, fecha: string, cupoMaximo: number|string,
+ *           organizador?: string }} datos
+ * @returns {Promise<import('@/types/event').Event>}
+ */
+export async function createEvent(datos) {
+  const respuesta = await http.post('/eventos', aPayload(datos))
 
   return toEvent(respuesta.data)
+}
+
+/**
+ * Actualiza un evento existente. Mismo payload que `createEvent`;
+ * `cuposDisponibles` tampoco se envía aquí, lo recalcula el backend a partir
+ * del aforo nuevo y los inscritos que ya tiene.
+ *
+ * @param {string | number} id
+ * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
+ *           lugar: string, fecha: string, cupoMaximo: number|string,
+ *           organizador?: string }} datos
+ * @returns {Promise<import('@/types/event').Event>}
+ */
+export async function updateEvent(id, datos) {
+  const respuesta = await http.put(`/eventos/${id}`, aPayload(datos))
+
+  return toEvent(respuesta.data)
+}
+
+/**
+ * Elimina un evento.
+ * @param {string | number} id
+ * @returns {Promise<void>}
+ */
+export async function deleteEvent(id) {
+  await http.del(`/eventos/${id}`)
 }
 
 /** Traduce el nombre de campo de la API al del formulario de evento. */

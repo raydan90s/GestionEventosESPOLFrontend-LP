@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { AforoBar } from '@components/AforoBar'
 import { CategoryChip } from '@components/CategoryChip'
 import { ComentariosSection } from '@components/ComentariosSection'
@@ -6,8 +7,10 @@ import { InscripcionForm } from '@components/InscripcionForm'
 import { StatusBadge } from '@components/StatusBadge'
 import { ArrowLeftIcon, CalendarIcon, PinIcon, UsersIcon } from '@components/icons'
 import { EVENT_STATUS, EVENT_STATUS_META } from '@constants/eventStatus'
-import { ROUTES, eventoAsistentes } from '@constants/routes'
+import { ROUTES, eventoAsistentes, eventoEditar } from '@constants/routes'
 import { useEvento } from '@hooks/useEvento'
+import { mensajeDeError } from '@services/apiErrors'
+import { deleteEvent } from '@services/eventsService'
 import { formatDateTime } from '@utils/formatDate'
 
 /**
@@ -20,7 +23,18 @@ import { formatDateTime } from '@utils/formatDate'
  */
 export default function EventoDetallePage() {
   const { id } = useParams()
+  const location = useLocation()
   const { evento, cargando, error, recargar } = useEvento(id)
+
+  /*
+   * El panel de editar cierra volviendo a esta misma URL, así que esta página
+   * nunca se desmonta durante el viaje de ida y vuelta y `useEvento` no vuelve
+   * a pedir el evento por sí solo. `EventoEditarPage` avisa con esta marca en
+   * el `state` de la navegación, y aquí se traduce a un `recargar()` explícito.
+   */
+  useEffect(() => {
+    if (location.state?.eventoActualizado) recargar()
+  }, [location.state?.eventoActualizado, recargar])
 
   if (cargando) {
     return (
@@ -57,10 +71,14 @@ export default function EventoDetallePage() {
 
   return (
     <div className="space-y-8">
-      <Link to={ROUTES.CATALOGO} className="link inline-flex items-center gap-2 text-sm">
-        <ArrowLeftIcon />
-        Volver al catálogo
-      </Link>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <Link to={ROUTES.CATALOGO} className="link inline-flex items-center gap-2 text-sm">
+          <ArrowLeftIcon />
+          Volver al catálogo
+        </Link>
+
+        <AccionesOrganizador evento={evento} />
+      </div>
 
       {/*
         La cabecera va fuera de la rejilla a propósito: si viviera en la columna
@@ -148,6 +166,102 @@ export default function EventoDetallePage() {
           )}
         </aside>
       </div>
+    </div>
+  )
+}
+
+/**
+ * Editar y eliminar el evento (Tarea 5 — "sólo si da el tiempo").
+ *
+ * Sin verificación de quién organiza —la app no tiene sesión de usuario—, así
+ * que quedan visibles para cualquiera que abra el detalle, igual que el resto
+ * de la vista.
+ *
+ * La confirmación de borrado es en línea y no un modal, mismo patrón que
+ * `AccionesFila` en `AsistentesTable`: el evento que se va a eliminar sigue
+ * delante mientras se decide.
+ *
+ * @param {{ evento: import('@/types/event').Event }} props
+ */
+function AccionesOrganizador({ evento }) {
+  const navegar = useNavigate()
+  const location = useLocation()
+  const [confirmando, setConfirmando] = useState(false)
+  const [eliminando, setEliminando] = useState(false)
+  const [error, setError] = useState(/** @type {string | null} */ (null))
+
+  const eliminar = async () => {
+    setEliminando(true)
+    setError(null)
+
+    try {
+      await deleteEvent(evento.id)
+      navegar(ROUTES.CATALOGO, { replace: true })
+    } catch (fallo) {
+      setError(mensajeDeError(fallo, 'No se pudo eliminar el evento. Intenta de nuevo.'))
+      setEliminando(false)
+      setConfirmando(false)
+    }
+  }
+
+  if (eliminando) {
+    return (
+      <span className="text-xs text-fg-muted" aria-live="polite">
+        Eliminando…
+      </span>
+    )
+  }
+
+  if (confirmando) {
+    return (
+      <div className="inline-flex flex-wrap items-center gap-2">
+        <span className="text-xs text-fg-muted">¿Eliminar este evento?</span>
+
+        <button
+          type="button"
+          onClick={eliminar}
+          aria-label={`Confirmar la eliminación de ${evento.titulo}`}
+          className="btn btn-neutral px-3 py-1.5 text-xs"
+        >
+          Sí, eliminar
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setConfirmando(false)}
+          aria-label="Cancelar la eliminación"
+          className="link text-xs"
+        >
+          No
+        </button>
+
+        {error && (
+          <p role="alert" className="w-full text-xs text-danger">
+            {error}
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <Link
+        to={eventoEditar(evento.id)}
+        state={{ background: location }}
+        className="btn btn-neutral px-3 py-1.5 text-xs"
+      >
+        Editar evento
+      </Link>
+
+      <button
+        type="button"
+        onClick={() => setConfirmando(true)}
+        aria-label={`Eliminar ${evento.titulo}`}
+        className="btn btn-neutral px-3 py-1.5 text-xs"
+      >
+        Eliminar evento
+      </button>
     </div>
   )
 }

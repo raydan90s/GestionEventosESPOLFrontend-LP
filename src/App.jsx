@@ -5,6 +5,7 @@ import { ROUTES } from '@constants/routes'
 import AsistentesPage from '@pages/AsistentesPage'
 import CatalogoPage from '@pages/CatalogoPage'
 import EventoDetallePage from '@pages/EventoDetallePage'
+import EventoEditarPage from '@pages/EventoEditarPage'
 import EventoNuevoPage from '@pages/EventoNuevoPage'
 import NotFoundPage from '@pages/NotFoundPage'
 
@@ -12,15 +13,18 @@ export default function App() {
   const location = useLocation()
 
   /*
-   * `/eventos/nuevo` no sustituye a la vista actual: se abre como panel lateral
-   * encima de ella. Sigue siendo una ruta —la URL es compartible y el botón
-   * «atrás» cierra el panel—, pero se pinta aparte de `<Routes>`.
+   * `/eventos/nuevo` y `/eventos/:id/editar` no sustituyen a la vista actual:
+   * se abren como panel lateral encima de ella. Siguen siendo rutas de verdad
+   * —la URL es compartible y el botón «atrás» cierra el panel—, pero se pintan
+   * aparte de `<Routes>`.
    *
-   * Detrás va la ubicación de la que se venía, que `CrearEventoLink` guarda en
-   * `state.background`. Si alguien escribe la URL a mano no hay nada previo que
-   * conservar, y el fondo pasa a ser el catálogo.
+   * Detrás va la ubicación de la que se venía, que `CrearEventoLink` (o el
+   * enlace de editar) guarda en `state.background`. Si alguien escribe la URL
+   * a mano no hay nada previo que conservar, y el fondo pasa a ser el catálogo.
    */
-  const panelAbierto = Boolean(matchPath(ROUTES.EVENTO_NUEVO, location.pathname))
+  const matchNuevo = matchPath(ROUTES.EVENTO_NUEVO, location.pathname)
+  const matchEditar = matchPath(ROUTES.EVENTO_EDITAR, location.pathname)
+  const panelAbierto = Boolean(matchNuevo || matchEditar)
   const fondo = panelAbierto
     ? (location.state?.background ?? ROUTES.CATALOGO)
     : location
@@ -42,7 +46,8 @@ export default function App() {
 
       <Footer />
 
-      {panelAbierto && <EventoNuevoPage />}
+      {matchNuevo && <EventoNuevoPage />}
+      {matchEditar && <EventoEditarPage id={matchEditar.params.id} />}
     </div>
   )
 }
