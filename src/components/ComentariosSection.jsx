@@ -26,6 +26,9 @@ export function ComentariosSection({ eventoId }) {
     enviando,
     errores,
     errorEnvio,
+    cargarMas,
+    cargandoMas,
+    hayMas,
   } = useComentarios(eventoId)
 
   const restantes = COMENTARIO_MAX - valores.contenido.length
@@ -112,24 +115,31 @@ export function ComentariosSection({ eventoId }) {
           Sé el primero en preguntar algo sobre este evento.
         </p>
       ) : (
-        <ul className="space-y-3">
-          {comentarios.map((comentario) => (
-            <li
-              key={comentario.id}
-              className="rounded-card border-l-2 border-edge-strong bg-card-muted p-4"
-            >
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-sm font-medium">{comentario.autor}</span>
-                <span className="text-xs text-fg-subtle">
-                  {formatDateTime(comentario.fecha)}
-                </span>
-              </div>
-              <p className="mt-1.5 whitespace-pre-line text-sm text-fg-muted">
-                {comentario.contenido}
-              </p>
-            </li>
-          ))}
-        </ul>
+        <>
+          <ul className="space-y-3">
+            {comentarios.map((comentario) => (
+              <li
+                key={comentario.id}
+                className="rounded-card border-l-2 border-edge-strong bg-card-muted p-4"
+              >
+                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <span className="text-sm font-medium">{comentario.autor}</span>
+                  <span className="text-xs text-fg-subtle">
+                    {formatDateTime(comentario.fecha)}
+                  </span>
+                </div>
+                <p className="mt-1.5 whitespace-pre-line text-sm text-fg-muted">
+                  {comentario.contenido}
+                </p>
+              </li>
+            ))}
+          </ul>
+          {hayMas && (
+            <button type="button" onClick={cargarMas} disabled={cargandoMas} className="link text-sm">
+              {cargandoMas ? 'Cargando…' : 'Ver más comentarios'}
+            </button>
+          )}
+        </>
       )}
     </section>
   )
