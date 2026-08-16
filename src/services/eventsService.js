@@ -35,18 +35,23 @@ export const toEvent = (row) => ({
 })
 
 /**
- * Catálogo de eventos, con filtros opcionales.
+ * Catálogo de eventos, con filtros opcionales y paginación.
  *
  * El filtrado lo hace el backend (SQL), no el cliente: así el catálogo puede
  * crecer sin que la vista tenga que descargarlo entero para poder filtrarlo.
+ * Por la misma razón el backend también pagina (50 por tanda como máximo) y
+ * por eso esta función devuelve el `total` de la consulta completa junto con
+ * la tanda pedida, igual que `getComentarios`: sin el total, quien pinta la
+ * lista no puede saber si hay más páginas detrás de la que acaba de recibir.
  *
  * `desde` y `hasta` llegan como fecha suelta (`YYYY-MM-DD`, lo que da un
  * `<input type="date">`) y salen como instante ISO: ver `@utils/apiDate`.
  *
  * @param {{ categoriaId?: number|string, q?: string, desde?: string, hasta?: string,
- *           soloProximos?: boolean, soloDisponibles?: boolean, estado?: string }} [filtros]
+ *           soloProximos?: boolean, soloDisponibles?: boolean, estado?: string,
+ *           limite?: number, offset?: number }} [filtros]
  * @param {{ signal?: AbortSignal }} [opciones]
- * @returns {Promise<import('@/types/event').Event[]>}
+ * @returns {Promise<{ total: number, eventos: import('@/types/event').Event[] }>}
  */
 export async function getEvents(filtros = {}, { signal } = {}) {
   const respuesta = await http.get(
@@ -61,11 +66,16 @@ export async function getEvents(filtros = {}, { signal } = {}) {
       // simplemente no viaja, que es justo lo que queremos.
       solo_proximos: filtros.soloProximos ? 'true' : undefined,
       solo_disponibles: filtros.soloDisponibles ? 'true' : undefined,
+      limite: filtros.limite,
+      offset: filtros.offset,
     },
     { signal },
   )
 
-  return (respuesta.data ?? []).map(toEvent)
+  return {
+    total: Number(respuesta.total ?? 0),
+    eventos: (respuesta.data ?? []).map(toEvent),
+  }
 }
 
 /**

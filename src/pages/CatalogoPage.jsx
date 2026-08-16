@@ -61,7 +61,7 @@ export default function CatalogoPage() {
    * las fechas. Se avisa en su lugar, y el rango viaja vacío para no gastar una
    * petición condenada.
    */
-  const { eventos, cargando, error, recargar } = useEventos({
+  const { eventos, total, cargando, cargandoMas, hayMas, error, recargar, cargarMas } = useEventos({
     categoriaId: filtros.categoriaId,
     q: filtros.q,
     desde: rangoInvalido ? '' : desde,
@@ -75,14 +75,16 @@ export default function CatalogoPage() {
   )
 
   /*
-   * Recuento del encabezado. Vacío mientras se carga o si algo falla: el error
-   * y el vacío ya se explican solos más abajo, y repetir «0 eventos» arriba no
-   * añade nada.
+   * Recuento del encabezado. Usa `total` —el de la consulta completa— y no
+   * `eventos.length` —el de lo ya cargado—: con 60 eventos y 50 en pantalla,
+   * `eventos.length` diría «50 eventos» aunque hay diez más detrás. Vacío
+   * mientras se carga o si algo falla: el error y el vacío ya se explican
+   * solos más abajo, y repetir «0 eventos» arriba no añade nada.
    */
   const resumen =
-    cargando || error || eventos.length === 0
+    cargando || error || total === 0
       ? ''
-      : `${eventos.length === 1 ? '1 evento' : `${eventos.length} eventos`}` +
+      : `${total === 1 ? '1 evento' : `${total} eventos`}` +
         (categoriaActiva ? ` en ${categoriaActiva.nombre}` : '')
 
   /**
@@ -163,11 +165,28 @@ export default function CatalogoPage() {
           onLimpiar={limpiar}
         />
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {eventos.map((evento, posicion) => (
-            <EventCard key={evento.id} event={evento} posicion={posicion} />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {eventos.map((evento, posicion) => (
+              <EventCard key={evento.id} event={evento} posicion={posicion} />
+            ))}
+          </div>
+
+          {/* Sólo si queda algo detrás de esta tanda. Nunca ámbar: ese color
+              está reservado a inscribirse, y este botón no lo es. */}
+          {hayMas && (
+            <div className="mt-8 flex justify-center">
+              <button
+                type="button"
+                onClick={cargarMas}
+                disabled={cargandoMas}
+                className="btn btn-neutral"
+              >
+                {cargandoMas ? 'Cargando…' : 'Ver más eventos'}
+              </button>
+            </div>
+          )}
+        </>
       )}
     </section>
   )
