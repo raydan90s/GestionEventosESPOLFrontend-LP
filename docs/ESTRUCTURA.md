@@ -159,6 +159,13 @@ en instantes ISO —principio y **fin** del día— antes de mandarlas como `fec
 enviar la fecha suelta dejaría fuera los eventos de esa misma tarde y el servidor la
 interpretaría en su propia zona horaria, no en la de quien filtra.
 
+### «Próximos» viene encendido por defecto
+
+El catálogo existe para inscribirse, no para consultar historial: en una URL limpia
+`proximos` ya está activo, y apagar el interruptor es lo que deja ver lo ya ocurrido. Por
+eso es el único filtro con un valor `INACTIVO` (`'0'`) explícito en `CATALOGO_PARAMS` —
+`disponibles` y el resto siguen con «ausente = apagado» porque ellos sí arrancan apagados.
+
 ## Configuración de entorno
 
 `src/config/api.js` lee `import.meta.env.VITE_API_URL`, con fallback a `http://localhost/api`.

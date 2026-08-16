@@ -3,7 +3,7 @@ import { Desplegable } from '@components/Desplegable'
 import { CalendarIcon, CheckIcon, CloseIcon, SearchIcon } from '@components/icons'
 import { normalizar } from '@constants/categories'
 import { RANGO_PERSONALIZADO, RANGOS_FECHA, etiquetaDeRango } from '@constants/rangosFecha'
-import { ACTIVO, CATALOGO_PARAMS } from '@constants/routes'
+import { ACTIVO, CATALOGO_PARAMS, INACTIVO } from '@constants/routes'
 import { cn } from '@utils/cn'
 
 /**
@@ -66,11 +66,9 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
       quitar: () => onFiltrar({ [CATALOGO_PARAMS.CATEGORIA]: null }),
     },
     conFechas && { clave: 'fecha', texto: etiquetaFecha, quitar: limpiarFechas },
-    filtros.proximos && {
-      clave: 'proximos',
-      texto: 'Solo próximos',
-      quitar: () => onFiltrar({ [CATALOGO_PARAMS.PROXIMOS]: null }),
-    },
+    // «Próximos» viene puesto de fábrica: no es algo que el usuario haya elegido,
+    // así que no entra en el resumen. Su propio interruptor ya muestra el estado
+    // con `aria-pressed` y `filter-chip-active`.
     filtros.disponibles && {
       clave: 'disponibles',
       texto: 'Con cupo',
@@ -105,7 +103,7 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
         <Interruptor
           activo={filtros.proximos}
           onClick={() =>
-            onFiltrar({ [CATALOGO_PARAMS.PROXIMOS]: filtros.proximos ? null : ACTIVO })
+            onFiltrar({ [CATALOGO_PARAMS.PROXIMOS]: filtros.proximos ? INACTIVO : null })
           }
         >
           Próximos

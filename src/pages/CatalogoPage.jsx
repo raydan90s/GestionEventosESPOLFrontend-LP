@@ -3,7 +3,7 @@ import { CatalogoFilters } from '@components/CatalogoFilters'
 import { CrearEventoLink } from '@components/CrearEventoLink'
 import { EventCard } from '@components/EventCard'
 import { resolverRango } from '@constants/rangosFecha'
-import { ACTIVO, CATALOGO_PARAMS } from '@constants/routes'
+import { ACTIVO, CATALOGO_PARAMS, INACTIVO } from '@constants/routes'
 import { useCategorias } from '@hooks/useCategorias'
 import { useEventos } from '@hooks/useEventos'
 
@@ -30,7 +30,7 @@ export default function CatalogoPage() {
     fecha: params.get(CATALOGO_PARAMS.FECHA),
     desde: params.get(CATALOGO_PARAMS.DESDE) ?? '',
     hasta: params.get(CATALOGO_PARAMS.HASTA) ?? '',
-    proximos: params.get(CATALOGO_PARAMS.PROXIMOS) === ACTIVO,
+    proximos: params.get(CATALOGO_PARAMS.PROXIMOS) !== INACTIVO,
     disponibles: params.get(CATALOGO_PARAMS.DISPONIBLES) === ACTIVO,
   }
 
@@ -41,10 +41,12 @@ export default function CatalogoPage() {
    */
   const { desde, hasta } = resolverRango(filtros.fecha, filtros)
 
+  // «Próximos» no entra aquí: viene encendido por defecto, así que nunca puede
+  // ser la causa de una rejilla vacía. Apagarlo amplía los resultados, nunca
+  // los reduce.
   const filtrando =
     filtros.categoriaId !== null ||
     filtros.q.trim() !== '' ||
-    filtros.proximos ||
     filtros.disponibles ||
     desde !== '' ||
     hasta !== ''

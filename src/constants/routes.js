@@ -35,6 +35,9 @@ export const CATALOGO_PARAMS = Object.freeze({
  */
 export const ACTIVO = '1'
 
+/** Apagado explícito. Necesario en los filtros que vienen activados por defecto. */
+export const INACTIVO = '0'
+
 /**
  * Construye la ruta de detalle de un evento.
  * @param {string | number} id
