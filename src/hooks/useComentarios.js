@@ -30,7 +30,10 @@ export function useComentarios(eventoId) {
   const offsetRef = useRef(0)
 
   useEffect(() => {
-    if (eventoId === undefined || eventoId === null || eventoId === '') return undefined
+    if (eventoId === undefined || eventoId === null || eventoId === '') {
+      setCargando(false)
+      return undefined
+    }
 
     const controlador = new AbortController()
     offsetRef.current = 0
