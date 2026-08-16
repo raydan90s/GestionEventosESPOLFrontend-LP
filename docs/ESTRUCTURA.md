@@ -113,6 +113,10 @@ con `toIso()` de [src/utils/apiDate.js](../src/utils/apiDate.js).
 Los hooks de `hooks/` envuelven cada llamada con su estado de carga, error y
 cancelación (`AbortController`), y nunca llaman a `fetch` directamente.
 
+### Decisión sobre borrar comentarios
+
+El endpoint `DELETE /api/comentarios/{id}` existe en el backend para permitir la moderación manual directamente en la API. Sin embargo, esta acción **no se expone a propósito** en el frontend. Dado que la propuesta original deja fuera de alcance un sistema complejo de login con múltiples roles, no hay manera de autorizar de forma segura quién puede borrar un comentario. Por ende, un botón de borrar abierto a todo el mundo resultaría riesgoso.
+
 ### «Crear evento» es una ruta que se pinta como panel
 
 `/eventos/nuevo` no sustituye a la vista actual: se abre como panel lateral encima de
