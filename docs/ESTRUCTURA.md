@@ -110,30 +110,67 @@ Las marcas de tiempo de PostgreSQL (`2026-08-17 14:38:18.355104+00`) no son ISO
 8601 válido para todos los navegadores, así que los adaptadores las normalizan
 con `toIso()` de [src/utils/apiDate.js](../src/utils/apiDate.js).
 
+El catálogo también pagina: el backend limita a 50 eventos por consulta como
+máximo, así que `getEvents` no devuelve un array sino `{ total, eventos }` —el
+`total` es el de la consulta completa, no el de la página— y
+[`useEventos`](../src/hooks/useEventos.js) expone `cargarMas()`, `cargandoMas` y
+`hayMas` (`eventos.length < total`) para pedir la siguiente tanda sin perder la
+ya cargada.
+
 Los hooks de `hooks/` envuelven cada llamada con su estado de carga, error y
 cancelación (`AbortController`), y nunca llaman a `fetch` directamente.
 
-### «Crear evento» es una ruta que se pinta como panel
+### Decisión sobre borrar comentarios
 
-`/eventos/nuevo` no sustituye a la vista actual: se abre como panel lateral encima de
-ella. Crear un evento es una tarea, y sacar al usuario del catálogo para hacerla le
-obliga a volver después.
+El endpoint `DELETE /api/comentarios/{id}` existe en el backend para permitir la moderación manual directamente en la API. Sin embargo, esta acción **no se expone a propósito** en el frontend. Dado que la propuesta original deja fuera de alcance un sistema complejo de login con múltiples roles, no hay manera de autorizar de forma segura quién puede borrar un comentario. Por ende, un botón de borrar abierto a todo el mundo resultaría riesgoso.
 
-Aun así **sigue siendo una ruta de verdad**, con URL compartible y botón «atrás» que
+### «Crear evento» y «Editar evento» son rutas que se pintan como panel
+
+`/eventos/nuevo` y `/eventos/:id/editar` no sustituyen a la vista actual: se abren
+como panel lateral encima de ella. Crear o editar un evento es una tarea, y sacar al
+usuario del catálogo o del detalle para hacerla le obliga a volver después.
+
+Aun así **siguen siendo rutas de verdad**, con URL compartible y botón «atrás» que
 cierra el panel. El patrón es el de rutas modales de React Router:
 
-1. [`CrearEventoLink`](../src/components/CrearEventoLink.jsx) navega a `/eventos/nuevo`
-   guardando la ubicación de partida en `state.background`.
-2. [`App`](../src/App.jsx) detecta la ruta con `matchPath`, pasa ese `background` como
-   `location` a `<Routes>` —para que la vista de fondo se siga pintando— y monta
-   `EventoNuevoPage` aparte. Si alguien escribe la URL a mano no hay fondo previo, y se
-   usa el catálogo.
+1. [`CrearEventoLink`](../src/components/CrearEventoLink.jsx) (o el enlace «Editar
+   evento» de `EventoDetallePage`) navega guardando la ubicación de partida en
+   `state.background`.
+2. [`App`](../src/App.jsx) detecta cada ruta con `matchPath`, pasa ese `background`
+   como `location` a `<Routes>` —para que la vista de fondo se siga pintando— y monta
+   `EventoNuevoPage` o `EventoEditarPage` aparte. `EventoEditarPage` recibe el `id` por
+   prop (el resultado del `matchPath`), no por `useParams`: al pintarse fuera de
+   `<Routes>` no hay una ruta activa de la que leerlo. Si alguien escribe la URL a mano
+   no hay fondo previo, y se usa el catálogo (o el detalle, al editar).
 3. [`SidePanel`](../src/components/SidePanel.jsx) es un `<dialog>` nativo abierto con
    `showModal()`. Se eligió el elemento nativo y no un `div` con `position: fixed` para
    no reimplementar el atrapado de foco, el cierre con Escape, la inertización del fondo
    y la capa superior: el navegador ya hace las cuatro cosas.
 
-Por eso `EventoNuevoPage` es la única página que **no** aparece en `<Routes>`.
+Por eso `EventoNuevoPage` y `EventoEditarPage` son las únicas páginas que **no**
+aparecen en `<Routes>`.
+
+El formulario en sí —campos, validación, traducción de errores 422, imagen— vive en
+[`EventoForm`](../src/components/EventoForm.jsx), compartido entre las dos: sólo
+cambian los valores de partida, el texto y qué hace `onGuardar` con lo enviado
+(crear o actualizar, y a dónde navegar después). `onGuardar` recibe también el
+archivo de imagen elegido, porque subirla es una petición aparte —ver más abajo.
+
+### La imagen del evento se sube aparte, no viaja en el JSON
+
+`POST /api/eventos/{id}/imagen` (`multipart/form-data`) es un endpoint distinto de
+`POST /api/eventos`: así `createEvent`/`updateEvent` siguen enviando JSON como
+siempre, y no hay que convertir todo el formulario a multipart por un campo opcional.
+El flujo en `EventoNuevoPage`/`EventoEditarPage` es: crear o actualizar primero, y
+sólo si hay archivo, subirlo después con el id ya conocido. Si la subida falla el
+evento ya quedó guardado, así que se avisa aparte en el detalle en vez de mostrar un
+error de creación que sería mentira.
+
+`imagen_url` guarda una ruta relativa (`storage/eventos/…`), no una URL absoluta —de
+ahí que pintarla necesite `assetUrl()` de [`@config/api`](../src/config/api.js), que
+antepone la base de archivos del backend (`public/`, no `/api`) y deja pasar tal cual
+cualquier valor que ya sea una URL absoluta (la columna es texto libre desde antes de
+esta función, así que un dato viejo puede traerla).
 
 ### Los filtros del catálogo viven en la URL
 

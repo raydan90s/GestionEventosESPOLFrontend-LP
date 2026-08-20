@@ -314,6 +314,16 @@ categoría tenga color propio.
 Al añadir un color a una pantalla, la pregunta no es «¿queda bien?» sino **«¿qué dato
 distingue este color que el texto no distinga ya?»**. Si no hay respuesta, va en gris.
 
+### 8. Imagen del evento
+
+Cabecera de la tarjeta del catálogo (`EventCard`) y, si existe, del detalle. Aspecto fijo
+(`aspect-video` + `object-cover`) para que una foto vertical no descuadre la rejilla, y
+**sin redondeo propio**: el borde superior se recorta con el `overflow-hidden` del propio
+`.surface`, que ya tiene los 4 px de `rounded-card`. Sin imagen, el mismo hueco lo ocupa
+`bg-card-muted` — nunca un color de categoría ni ámbar, que son excepciones que hay que
+justificar (§7) y una imagen que falta no es una de ellas. Decorativa (`alt=""` +
+`aria-hidden`): el título del evento ya está en texto debajo.
+
 ---
 
 ## Añadir un color nuevo

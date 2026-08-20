@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { mensajeDeError } from '@services/apiErrors'
-import { crearComentario, erroresDeCampo, getComentarios } from '@services/comentariosService'
+import { AUTOR_MAX, AUTOR_MIN, COMENTARIO_MAX, COMENTARIO_MIN, COMENTARIOS_POR_PAGINA, crearComentario, erroresDeCampo, getComentarios } from '@services/comentariosService'
 
 /** Formulario vacío. */
 const VACIO = Object.freeze({ autor: '', contenido: '' })
@@ -26,13 +26,19 @@ export function useComentarios(eventoId) {
   const [enviando, setEnviando] = useState(false)
   const [errores, setErrores] = useState(/** @type {Record<string, string>} */ ({}))
   const [errorEnvio, setErrorEnvio] = useState(/** @type {string | null} */ (null))
+  const [cargandoMas, setCargandoMas] = useState(false)
+  const offsetRef = useRef(0)
 
   useEffect(() => {
-    if (eventoId === undefined || eventoId === null || eventoId === '') return undefined
+    if (eventoId === undefined || eventoId === null || eventoId === '') {
+      setCargando(false)
+      return undefined
+    }
 
     const controlador = new AbortController()
+    offsetRef.current = 0
 
-    getComentarios(eventoId, { signal: controlador.signal })
+    getComentarios(eventoId, { limite: COMENTARIOS_POR_PAGINA, offset: 0, signal: controlador.signal })
       .then((resultado) => {
         setComentarios(resultado.comentarios)
         setTotal(resultado.total)
@@ -68,6 +74,24 @@ export function useComentarios(eventoId) {
       setErrores({})
       setErrorEnvio(null)
 
+      const autorTrim = valores.autor.trim()
+      const contenidoTrim = valores.contenido.trim()
+      const fallosValidacion = {}
+
+      if (autorTrim.length < AUTOR_MIN || autorTrim.length > AUTOR_MAX) {
+        fallosValidacion.autor = `El nombre debe tener entre ${AUTOR_MIN} y ${AUTOR_MAX} caracteres.`
+      }
+
+      if (contenidoTrim.length < COMENTARIO_MIN || contenidoTrim.length > COMENTARIO_MAX) {
+        fallosValidacion.contenido = `El comentario debe tener entre ${COMENTARIO_MIN} y ${COMENTARIO_MAX} caracteres.`
+      }
+
+      if (Object.keys(fallosValidacion).length > 0) {
+        setErrores(fallosValidacion)
+        setEnviando(false)
+        return
+      }
+
       try {
         const creado = await crearComentario(eventoId, valores)
 
@@ -89,6 +113,25 @@ export function useComentarios(eventoId) {
     [enviando, eventoId, valores],
   )
 
+  const cargarMas = useCallback(async () => {
+    if (cargandoMas) return
+    setCargandoMas(true)
+
+    const nuevoOffset = offsetRef.current + COMENTARIOS_POR_PAGINA
+
+    try {
+      const resultado = await getComentarios(eventoId, { limite: COMENTARIOS_POR_PAGINA, offset: nuevoOffset })
+      setComentarios((previos) => [...previos, ...resultado.comentarios])
+      offsetRef.current = nuevoOffset
+    } catch (fallo) {
+      console.error(fallo)
+    } finally {
+      setCargandoMas(false)
+    }
+  }, [cargandoMas, eventoId])
+
+  const hayMas = comentarios.length < total
+
   return {
     comentarios,
     total,
@@ -100,5 +143,8 @@ export function useComentarios(eventoId) {
     enviando,
     errores,
     errorEnvio,
+    cargarMas,
+    cargandoMas,
+    hayMas,
   }
 }

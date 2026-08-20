@@ -33,11 +33,11 @@ const toComment = (row) => ({
 /**
  * Comentarios de un evento, del más reciente al más antiguo.
  * @param {string | number} eventoId
- * @param {{ signal?: AbortSignal }} [opciones]
+ * @param {{ limite?: number, offset?: number, signal?: AbortSignal }} [opciones]
  * @returns {Promise<{ total: number, comentarios: import('@/types/event').Comment[] }>}
  */
-export async function getComentarios(eventoId, { signal } = {}) {
-  const respuesta = await http.get(`/eventos/${eventoId}/comentarios`, undefined, { signal })
+export async function getComentarios(eventoId, { limite, offset, signal } = {}) {
+  const respuesta = await http.get(`/eventos/${eventoId}/comentarios`, { limite, offset }, { signal })
 
   return {
     total: Number(respuesta.total ?? 0),
@@ -66,6 +66,11 @@ export async function crearComentario(eventoId, datos) {
 /** Límites que impone la base: `contenido` es `CHECK (char_length BETWEEN 3 AND 1000)`. */
 export const COMENTARIO_MAX = 1000
 export const COMENTARIO_MIN = 3
+export const AUTOR_MAX = 120
+export const AUTOR_MIN = 3
+
+/** Comentarios que se piden por tanda. */
+export const COMENTARIOS_POR_PAGINA = 20
 
 /**
  * Errores de validación del formulario de comentario.

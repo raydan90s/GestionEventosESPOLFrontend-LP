@@ -2,6 +2,7 @@
 export const ROUTES = Object.freeze({
   CATALOGO: '/',
   EVENTO_NUEVO: '/eventos/nuevo',
+  EVENTO_EDITAR: '/eventos/:id/editar',
   EVENTO_DETALLE: '/eventos/:id',
   EVENTO_ASISTENTES: '/eventos/:id/asistentes',
 })
@@ -44,6 +45,13 @@ export const ACTIVO = '1'
  * @returns {string}
  */
 export const eventoDetalle = (id) => `/eventos/${id}`
+
+/**
+ * Construye la ruta de edición de un evento.
+ * @param {string | number} id
+ * @returns {string}
+ */
+export const eventoEditar = (id) => `/eventos/${id}/editar`
 
 /**
  * Construye la ruta del listado de asistentes de un evento (vista de organizador).

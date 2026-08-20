@@ -31,23 +31,30 @@ export const toEvent = (row) => ({
   cuposDisponibles: Number(row.cupos_disponibles ?? 0),
   inscritos: Number(row.inscritos ?? 0),
   organizador: String(row.organizador ?? ''),
+  // Nullable en la base: la condición evita que un `null` se convierta en
+  // la cadena literal "null" al envolverlo en `String()`.
+  imagenUrl: row.imagen_url ? String(row.imagen_url) : '',
   estado: String(row.estado ?? ''),
 })
 
 /**
- * Catálogo de eventos, con filtros opcionales.
+ * Catálogo de eventos, con filtros opcionales y paginación.
  *
  * El filtrado lo hace el backend (SQL), no el cliente: así el catálogo puede
  * crecer sin que la vista tenga que descargarlo entero para poder filtrarlo.
+ * Por la misma razón el backend también pagina (50 por tanda como máximo) y
+ * por eso esta función devuelve el `total` de la consulta completa junto con
+ * la tanda pedida, igual que `getComentarios`: sin el total, quien pinta la
+ * lista no puede saber si hay más páginas detrás de la que acaba de recibir.
  *
  * `desde` y `hasta` llegan como fecha suelta (`YYYY-MM-DD`, lo que da un
  * `<input type="date">`) y salen como instante ISO: ver `@utils/apiDate`.
  *
  * @param {{ categoriaId?: number|string, q?: string, desde?: string, hasta?: string,
  *           soloProximos?: boolean, soloPasados?: boolean, soloDisponibles?: boolean,
- *           estado?: string }} [filtros]
+ *           estado?: string, limite?: number, offset?: number }} [filtros]
  * @param {{ signal?: AbortSignal }} [opciones]
- * @returns {Promise<import('@/types/event').Event[]>}
+ * @returns {Promise<{ total: number, eventos: import('@/types/event').Event[] }>}
  */
 export async function getEvents(filtros = {}, { signal } = {}) {
   const respuesta = await http.get(
@@ -65,11 +72,16 @@ export async function getEvents(filtros = {}, { signal } = {}) {
       // inverso: de un pasado se mira primero lo más reciente.
       solo_pasados: filtros.soloPasados ? 'true' : undefined,
       solo_disponibles: filtros.soloDisponibles ? 'true' : undefined,
+      limite: filtros.limite,
+      offset: filtros.offset,
     },
     { signal },
   )
 
-  return (respuesta.data ?? []).map(toEvent)
+  return {
+    total: Number(respuesta.total ?? 0),
+    eventos: (respuesta.data ?? []).map(toEvent),
+  }
 }
 
 /**
@@ -85,16 +97,14 @@ export async function getEvent(id, { signal } = {}) {
 }
 
 /**
- * Crea un evento.
- *
- * `cuposDisponibles` no se envía: el backend lo iguala al aforo máximo al crear.
+ * Payload snake_case común a crear y actualizar: los mismos campos, sólo
+ * cambia a qué endpoint y con qué verbo viajan.
  *
  * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
  *           lugar: string, fecha: string, cupoMaximo: number|string,
  *           organizador?: string }} datos
- * @returns {Promise<import('@/types/event').Event>}
  */
-export async function createEvent(datos) {
+const aPayload = (datos) => {
   const payload = {
     titulo: String(datos.titulo ?? '').trim(),
     categoria_id: Number(datos.categoriaId),
@@ -111,7 +121,66 @@ export async function createEvent(datos) {
     if (valor !== '') payload[campoApi] = valor
   }
 
-  const respuesta = await http.post('/eventos', payload)
+  return payload
+}
+
+/**
+ * Crea un evento.
+ *
+ * `cuposDisponibles` no se envía: el backend lo iguala al aforo máximo al crear.
+ *
+ * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
+ *           lugar: string, fecha: string, cupoMaximo: number|string,
+ *           organizador?: string }} datos
+ * @returns {Promise<import('@/types/event').Event>}
+ */
+export async function createEvent(datos) {
+  const respuesta = await http.post('/eventos', aPayload(datos))
+
+  return toEvent(respuesta.data)
+}
+
+/**
+ * Actualiza un evento existente. Mismo payload que `createEvent`;
+ * `cuposDisponibles` tampoco se envía aquí, lo recalcula el backend a partir
+ * del aforo nuevo y los inscritos que ya tiene.
+ *
+ * @param {string | number} id
+ * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
+ *           lugar: string, fecha: string, cupoMaximo: number|string,
+ *           organizador?: string }} datos
+ * @returns {Promise<import('@/types/event').Event>}
+ */
+export async function updateEvent(id, datos) {
+  const respuesta = await http.put(`/eventos/${id}`, aPayload(datos))
+
+  return toEvent(respuesta.data)
+}
+
+/**
+ * Elimina un evento.
+ * @param {string | number} id
+ * @returns {Promise<void>}
+ */
+export async function deleteEvent(id) {
+  await http.del(`/eventos/${id}`)
+}
+
+/**
+ * Sube la imagen de un evento ya creado. Va separada de `createEvent` y
+ * `updateEvent` porque es un endpoint aparte (`multipart/form-data`, no
+ * JSON): así los dos siguen enviando JSON como siempre y no hay que
+ * convertir todo el formulario a multipart por un campo opcional.
+ *
+ * @param {string | number} id
+ * @param {File} archivo
+ * @returns {Promise<import('@/types/event').Event>}
+ */
+export async function uploadEventImage(id, archivo) {
+  const formData = new FormData()
+  formData.append('imagen', archivo)
+
+  const respuesta = await http.upload(`/eventos/${id}/imagen`, formData)
 
   return toEvent(respuesta.data)
 }

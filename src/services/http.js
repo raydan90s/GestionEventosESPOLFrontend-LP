@@ -22,10 +22,15 @@ export class ApiError extends Error {
  * @returns {Promise<any>}
  */
 export async function request(path, options = {}) {
+  // Con un `FormData` (subida de archivos) no se fija `Content-Type`: el
+  // navegador tiene que ponerlo él mismo con el `boundary` que genera.
+  // Fijarlo a mano rompería la petición.
+  const esFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
+
   const response = await fetch(apiUrl(path), {
     headers: {
       Accept: 'application/json',
-      ...(options.body ? { 'Content-Type': 'application/json' } : {}),
+      ...(options.body && !esFormData ? { 'Content-Type': 'application/json' } : {}),
       ...options.headers,
     },
     ...options,
@@ -62,4 +67,6 @@ export const http = {
   put: (path, body) => request(path, { method: 'PUT', body: JSON.stringify(body) }),
   /** @param {string} path */
   del: (path) => request(path, { method: 'DELETE' }),
+  /** @param {string} path @param {FormData} formData */
+  upload: (path, formData) => request(path, { method: 'POST', body: formData }),
 }
