@@ -31,14 +31,8 @@ export default function AsistentesPage() {
   const filtrando = busqueda.trim() !== ''
 
   /**
-   * Descarga el listado visible como CSV, para el control logístico en puerta.
-   * El armado del texto es puro y vive en `@utils/csv`; aquí queda sólo el
-   * efecto de descarga, que no puede estar en `utils/`.
-   *
-   * Exporta **lo que hay en pantalla**: con una búsqueda puesta salen sólo las
-   * coincidencias. Por eso, cuando hay filtro, cambian tanto la etiqueta del
-   * botón como el nombre del archivo; bajar el CSV en la puerta creyendo que
-   * lleva la lista completa cuando no es así es un problema real.
+   * Descarga como CSV lo que hay en pantalla (el armado vive en `@utils/csv`):
+   * con una busqueda puesta salen solo las coincidencias, y el nombre lo dice.
    */
   const descargarCsv = () => {
     const filas = asistentes.map((asistente) => ({
@@ -79,12 +73,8 @@ export default function AsistentesPage() {
           </p>
         </div>
 
-        {/*
-          `cuposDisponibles` viaja explícito: es la cifra que calcula la misma
-          transacción que descuenta el cupo, y aquí importa de más porque dar de
-          baja a alguien lo devuelve. Restarlo en el cliente sería decidir el
-          aforo por nuestra cuenta.
-        */}
+        {/* `cuposDisponibles` viaja explicito: dar de baja devuelve un cupo y
+            restarlo aqui seria decidir el aforo en el cliente. */}
         {evento && (
           <AforoBar
             inscritos={evento.inscritos}
@@ -95,10 +85,8 @@ export default function AsistentesPage() {
         )}
       </header>
 
-      {/*
-        La baja falla aparte de la carga: el listado que se está viendo sigue
-        siendo válido, así que se avisa sin tirar la tabla.
-      */}
+      {/* La baja falla aparte de la carga: el listado sigue siendo valido,
+          asi que se avisa sin tirar la tabla. */}
       {errorCancelar && (
         <p role="alert" className="rounded-card bg-danger-soft px-4 py-3 text-sm text-danger">
           {errorCancelar}
@@ -129,10 +117,8 @@ export default function AsistentesPage() {
         </button>
       </div>
 
-      {/*
-        Siempre en el DOM aunque esté vacío: un `aria-live` que aparece a la vez
-        que su texto no se anuncia de forma fiable.
-      */}
+      {/* Siempre en el DOM aunque este vacio: un `aria-live` que aparece a la
+          vez que su texto no se anuncia de forma fiable. */}
       <p className="min-h-5 text-sm text-fg-muted" aria-live="polite">
         {error
           ? ''

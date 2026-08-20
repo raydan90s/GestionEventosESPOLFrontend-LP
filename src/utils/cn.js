@@ -1,5 +1,5 @@
 /**
- * Une clases condicionales descartando valores vacíos.
+ * Une clases condicionales descartando valores vacios.
  * @param {...(string | false | null | undefined)} classes
  * @returns {string}
  */

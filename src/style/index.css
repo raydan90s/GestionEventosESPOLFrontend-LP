@@ -30,13 +30,13 @@
 
   /*
    * La voz editorial del sistema: todo titular va en serif por defecto, sin
-   * que cada página tenga que acordarse de poner `font-serif`.
+   * que cada pagina tenga que acordarse de poner `font-serif`.
    */
   h1, h2, h3 {
     font-family: var(--font-serif);
   }
 
-  /* El foco siempre es azul institucional, nunca ámbar. */
+  /* El foco siempre es azul institucional, nunca ambar. */
   :focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
@@ -45,10 +45,8 @@
 
 @layer components {
   /*
-   * Chip de categoría. El color se inyecta con la variable `--chip-color`
-   * (ver `colorDeCategoria` en `@constants/categories`). Tailwind v3 no puede aplicar
-   * modificadores de opacidad (`/12`) sobre colores declarados como `var(--x)`,
-   * así que el fondo al 12 % se resuelve con `color-mix`.
+   * Chip de categoria; el color entra por `--chip-color`. El fondo al 12 % usa
+   * `color-mix` porque Tailwind v3 no aplica opacidad sobre `var(--x)`.
    */
   .chip-cat {
     color: var(--chip-color);
@@ -56,7 +54,7 @@
   }
 
   /*
-   * Botones. Un solo sitio con el tamaño, la forma y los estados, para que
+   * Botones. Un solo sitio con el tamano, la forma y los estados, para que
    * las ocho pantallas no repitan la misma ristra de utilidades.
    */
   .btn {
@@ -75,14 +73,14 @@
   }
 
   /*
-   * Ámbar: **sólo** inscribirse. Siempre en semibold, porque con texto normal
+   * Ambar: solo inscribirse. Siempre en semibold, porque con texto normal
    * no llega al contraste que pide WCAG AA (ver PALETA.md §4).
    */
   .btn-accent {
     @apply bg-accent text-accent-foreground hover:bg-accent-hover;
   }
 
-  /* Fantasma: acción secundaria junto a un CTA. Borde azul, fondo del panel. */
+  /* Fantasma: accion secundaria junto a un CTA. Borde azul, fondo del panel. */
   .btn-ghost {
     @apply border border-primary bg-transparent text-primary hover:bg-primary-soft;
   }
@@ -111,14 +109,9 @@
   }
 
   /*
-   * Filtro del catálogo: píldora neutra en reposo y azul institucional cuando
-   * está puesta. Nunca ámbar: el ámbar es sólo de inscribirse (PALETA.md §1).
-   *
-   * Un solo color a propósito, aunque la categoría tenga el suyo: la barra de
-   * filtros lista todas las opciones a la vez, y pintar cada una de un color
-   * convierte una fila de controles en un arcoíris donde no se distingue cuál
-   * está elegida. El color de categoría se reserva a `.chip-cat`, donde
-   * identifica **un** evento (PALETA.md §3).
+   * Filtro del catalogo: pildora neutra en reposo y azul institucional cuando
+   * esta puesta. Nunca ambar: el ambar es solo de inscribirse (PALETA.md §1).
+   * El color de categoria se reserva a `.chip-cat` (PALETA.md §3).
    */
   .filter-chip {
     @apply rounded-pill border border-edge bg-card px-4 py-1.5 text-sm font-medium
@@ -126,18 +119,16 @@
            hover:text-fg;
   }
 
-  /* Repite el hover porque la variante base lo define con la misma
-     especificidad (`.filter-chip:hover`) y si no, el activo se destiñe. */
+  /* Repite el hover: la variante base lo define con la misma especificidad
+     (`.filter-chip:hover`) y si no, el activo pierde el color. */
   .filter-chip-active,
   .filter-chip-active:hover {
     @apply border-secondary bg-secondary text-secondary-foreground;
   }
 
   /*
-   * Isotipo de la marca. `logo.png` es tinta negra sobre transparente, así que
-   * se usa como máscara y no como imagen: el color lo pone `currentColor`, de
-   * modo que la marca sigue al tema con un único archivo en vez de una copia
-   * clara y otra oscura. La proporción es la del PNG recortado (390×512).
+   * Isotipo de la marca. `logo.png` se usa como mascara y no como imagen: el
+   * color lo pone `currentColor` y la marca sigue al tema. Proporcion (390×512).
    */
   .brand-mark {
     aspect-ratio: 390 / 512;
@@ -152,20 +143,16 @@
   }
 
   /*
-   * Tarjeta. Profundidad por borde; la sombra sólo aparece al pasar el cursor
-   * («Elevation & Depth» del sistema de diseño).
+   * Tarjeta. Profundidad por borde; la sombra solo aparece al pasar el cursor
+   * ("Elevation & Depth" del sistema de diseno).
    */
   .surface {
     @apply rounded-card border border-edge bg-card;
   }
 
   /*
-   * Panel lateral. Es un `<dialog>` modal nativo, así que el navegador ya se
-   * encarga del atrapado de foco, de Escape y de dejar inerte el fondo.
-   *
-   * `margin` va en CSS plano y no en `@apply`: el `<dialog>` viene con
-   * `margin: auto` del user-agent y hay que ganarle con la propiedad completa,
-   * sin depender de en qué orden emita Tailwind `m-0` y `ml-auto`.
+   * Panel lateral: `<dialog>` modal nativo, con foco atrapado y Escape ya
+   * resueltos. El `margin` va en CSS plano para ganarle al del user-agent.
    */
   .side-panel {
     margin: 0 0 0 auto;
@@ -194,9 +181,7 @@
 
 /*
  * Entrada de las tarjetas: quien pide menos movimiento ve la rejilla ya puesta.
- * Va fuera de `@layer` y al final del archivo a propósito: `.animate-fade-up`
- * es una utilidad, y las utilidades se emiten en `@tailwind utilities` (arriba),
- * así que sólo ganando por orden de aparición se anula sin subir especificidad.
+ * Va al final y fuera de `@layer` para anular la utilidad por orden.
  */
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-up {

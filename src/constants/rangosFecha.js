@@ -1,13 +1,6 @@
 /**
- * Rangos de fecha predefinidos del catálogo.
- *
- * El filtro de fechas no viaja a la URL como dos fechas sueltas cuando es un
- * atajo, sino como su clave (`fecha=semana`): un enlace compartido hoy sigue
- * significando «esta semana» la semana que viene, y la query string se lee sin
- * descifrar dos marcas de tiempo. El rango concreto se calcula al consultar.
- *
- * El rango a medida sí guarda `desde`/`hasta`, porque ahí las fechas exactas
- * son justo lo que el usuario eligió.
+ * Rangos de fecha del catalogo. Los atajos viajan en la URL por su clave
+ * (`fecha=semana`) y no como dos fechas, para que el enlace no caduque.
  */
 
 /** Fecha suelta `YYYY-MM-DD` en la zona del usuario, como la da un `<input type="date">`. */
@@ -17,7 +10,7 @@ const aFecha = (fecha) => {
   return `${fecha.getFullYear()}-${dosDigitos(fecha.getMonth() + 1)}-${dosDigitos(fecha.getDate())}`
 }
 
-/** Copia de `fecha` desplazada `dias` días; no muta la original. */
+/** Copia de `fecha` desplazada `dias` dias; no muta la original. */
 const sumarDias = (fecha, dias) => {
   const resultado = new Date(fecha)
   resultado.setDate(resultado.getDate() + dias)
@@ -26,10 +19,8 @@ const sumarDias = (fecha, dias) => {
 }
 
 /**
- * Atajos de rango, en el orden en que se listan.
- *
- * `rango(hoy)` recibe la fecha actual como argumento en vez de leerla dentro:
- * así el cálculo es una función pura y se puede probar con cualquier día.
+ * Atajos de rango, en el orden en que se listan. `rango(hoy)` recibe la fecha
+ * como argumento para que el calculo sea puro.
  *
  * @type {readonly { clave: string, etiqueta: string,
  *                   rango: (hoy: Date) => { desde: string, hasta: string } }[]}
@@ -50,7 +41,7 @@ export const RANGOS_FECHA = Object.freeze([
     etiqueta: 'Este mes',
     rango: (hoy) => ({
       desde: aFecha(hoy),
-      // Día 0 del mes siguiente es el último del actual, sin tabla de días.
+      // Dia 0 del mes siguiente es el ultimo del actual, sin tabla de dias.
       hasta: aFecha(new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0)),
     }),
   },
@@ -64,18 +55,16 @@ export const RANGOS_FECHA = Object.freeze([
   },
 ])
 
-/** Clave del rango escrito a mano, la única que usa `desde`/`hasta` de la URL. */
+/** Clave del rango escrito a mano, la unica que usa `desde`/`hasta` de la URL. */
 export const RANGO_PERSONALIZADO = 'personalizado'
 
 /**
  * Resuelve el filtro de fechas de la URL en el par que espera la API.
+ * Una clave desconocida no filtra nada en vez de romper la vista.
  *
- * Una clave desconocida —una URL escrita a mano, un atajo que ya no existe— no
- * filtra nada en vez de romper la vista.
- *
- * @param {string | null} clave Valor del parámetro `fecha`.
+ * @param {string | null} clave Valor del parametro `fecha`.
  * @param {{ desde?: string, hasta?: string }} [aMedida] Rango escrito a mano.
- * @param {Date} [hoy] Día de referencia; se inyecta para poder probarlo.
+ * @param {Date} [hoy] Dia de referencia; se inyecta para poder probarlo.
  * @returns {{ desde: string, hasta: string }}
  */
 export function resolverRango(clave, aMedida = {}, hoy = new Date()) {
@@ -90,7 +79,7 @@ export function resolverRango(clave, aMedida = {}, hoy = new Date()) {
 
 const FECHA_CORTA = new Intl.DateTimeFormat('es-EC', { day: 'numeric', month: 'short' })
 
-/** «12 sep» a partir de una fecha suelta `YYYY-MM-DD`, leída en hora local. */
+/** "12 sep" a partir de una fecha suelta `YYYY-MM-DD`, leida en hora local. */
 const fechaCorta = (valor) => {
   const fecha = new Date(`${valor}T00:00:00`)
 
@@ -98,8 +87,8 @@ const fechaCorta = (valor) => {
 }
 
 /**
- * Texto del botón de fechas: el nombre del atajo, o el rango escrito a mano en
- * corto («12 sep – 30 sep», «desde 12 sep»). Vacío si no hay filtro de fechas.
+ * Texto del boton de fechas: el nombre del atajo o el rango en corto
+ * ("12 sep - 30 sep"). Vacio si no hay filtro.
  *
  * @param {string | null} clave
  * @param {{ desde?: string, hasta?: string }} [aMedida]

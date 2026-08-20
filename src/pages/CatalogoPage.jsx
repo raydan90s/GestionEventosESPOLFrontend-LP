@@ -9,18 +9,10 @@ import { useCategorias } from '@hooks/useCategorias'
 import { useEventos } from '@hooks/useEventos'
 
 /**
- * Catálogo de eventos (RF "Ver catálogo de eventos", Juliana Burgos).
+ * Catalogo de eventos (RF "Ver catalogo de eventos", Juliana Burgos).
  *
- * Categorías, eventos y filtrado salen de la API: no hay datos de ejemplo.
- * Los filtros —categoría, fechas, cupo y búsqueda— viajan en la query string y
- * los resuelve el backend en SQL, porque el catálogo va a crecer y no tiene
- * sentido descargarlo entero para filtrarlo en memoria.
- *
- * La búsqueda también vive en la URL porque el campo está en la navbar
- * (ver `@components/Navbar`): así las dos vistas comparten un solo estado.
- *
- * La barra de filtros es `@components/CatalogoFilters`; aquí sólo se leen los
- * parámetros, se escriben y se traducen a la consulta.
+ * Los filtros viajan en la query string y los resuelve el backend; la busqueda
+ * vive ahi porque el campo esta en la navbar y el listado aqui.
  */
 export default function CatalogoPage() {
   const [params, setParams] = useSearchParams()
@@ -31,24 +23,17 @@ export default function CatalogoPage() {
     fecha: params.get(CATALOGO_PARAMS.FECHA),
     desde: params.get(CATALOGO_PARAMS.DESDE) ?? '',
     hasta: params.get(CATALOGO_PARAMS.HASTA) ?? '',
-    /*
-     * Sin `tiempo` en la URL el catálogo lista sólo lo que está por venir: un
-     * evento cuya fecha ya pasó no admite inscripciones, así que mezclarlo con
-     * los demás sólo lleva a intentar apuntarse a algo que el backend rechaza.
-     * El histórico se pide a propósito con `tiempo=pasados`.
-     */
+    // Sin `tiempo` en la URL solo se lista lo que esta por venir; el historico
+    // se pide a proposito con `tiempo=pasados`.
     tiempo: resolverTiempo(params.get(CATALOGO_PARAMS.TIEMPO)),
     disponibles: params.get(CATALOGO_PARAMS.DISPONIBLES) === ACTIVO,
   }
 
-  /*
-   * El rango que se consulta. Un atajo (`fecha=semana`) se resuelve aquí, en el
-   * render, y no al pulsarlo: guardado en la URL como fechas concretas, un
-   * enlace compartido hoy seguiría filtrando por la semana pasada mañana.
-   */
+  // El atajo (`fecha=semana`) se resuelve en el render y no al pulsarlo: como
+  // fechas concretas en la URL, un enlace compartido caducaria.
   const { desde, hasta } = resolverRango(filtros.fecha, filtros)
 
-  // «Próximos» es el valor por defecto de `tiempo`, así que sólo cuenta como
+  // "Proximos" es el valor por defecto de `tiempo`, asi que solo cuenta como
   // filtro puesto cuando se ha pedido otra cosa (pasados o todos).
   const filtrando =
     filtros.categoriaId !== null ||
@@ -62,12 +47,8 @@ export default function CatalogoPage() {
   const rangoInvalido = desde !== '' && hasta !== '' && hasta < desde
 
   const { categorias } = useCategorias()
-  /*
-   * Con el rango al revés no se consulta: la respuesta sería vacía siempre y
-   * «ningún evento coincide» haría pensar que el problema son los datos y no
-   * las fechas. Se avisa en su lugar, y el rango viaja vacío para no gastar una
-   * petición condenada.
-   */
+  // Con el rango al reves no se consulta: se avisa en su lugar, para no dar un
+  // "ningun evento coincide" que senalaria a los datos y no a las fechas.
   const { eventos, total, cargando, cargandoMas, hayMas, error, recargar, cargarMas } = useEventos({
     categoriaId: filtros.categoriaId,
     q: filtros.q,
@@ -77,18 +58,13 @@ export default function CatalogoPage() {
     soloPasados: filtros.tiempo === TIEMPO_EVENTO.PASADOS,
     soloDisponibles: filtros.disponibles,
   })
-  // El id de la URL es texto y el de la API número: se comparan como texto.
+  // El id de la URL es texto y el de la API numero: se comparan como texto.
   const categoriaActiva = categorias.find(
     (categoria) => String(categoria.id) === filtros.categoriaId,
   )
 
-  /*
-   * Recuento del encabezado. Usa `total` —el de la consulta completa— y no
-   * `eventos.length` —el de lo ya cargado—: con 60 eventos y 50 en pantalla,
-   * `eventos.length` diría «50 eventos» aunque hay diez más detrás. Vacío
-   * mientras se carga o si algo falla: el error y el vacío ya se explican
-   * solos más abajo, y repetir «0 eventos» arriba no añade nada.
-   */
+  // Recuento del encabezado: usa `total` y no `eventos.length`, que solo cuenta
+  // lo ya cargado. Vacio mientras se carga o si algo falla.
   const resumen =
     cargando || error || total === 0
       ? ''
@@ -96,11 +72,8 @@ export default function CatalogoPage() {
         (categoriaActiva ? ` en ${categoriaActiva.nombre}` : '')
 
   /**
-   * Escribe filtros en la query string; un valor vacío o nulo los quita.
-   *
-   * Acepta varios de golpe porque algunos cambios son atómicos: elegir el atajo
-   * «esta semana» pone `fecha` y borra `desde`/`hasta` en la misma pasada, y
-   * hacerlo en dos llamadas dejaría la URL medio escrita entre renders.
+   * Escribe filtros en la query string; un valor vacio o nulo los quita.
+   * Acepta varios de golpe porque hay cambios atomicos (el atajo de fecha).
    *
    * @param {Record<string, string | number | null>} cambios
    */
@@ -128,12 +101,8 @@ export default function CatalogoPage() {
             Actividades académicas, deportivas y culturales de la ESPOL.
           </p>
 
-          {/*
-            Siempre en el DOM aunque esté vacío: un `aria-live` que aparece a la
-            vez que su texto no se anuncia de forma fiable, porque el lector de
-            pantalla necesita estar observando la región antes de que cambie.
-            `min-h-5` reserva su línea para que el encabezado no dé un salto.
-          */}
+          {/* Siempre en el DOM aunque este vacio: un `aria-live` que aparece
+              a la vez que su texto no se anuncia. `min-h-5` reserva la linea. */}
           <p className="min-h-5 text-sm text-fg-muted" aria-live="polite">
             {resumen}
           </p>
@@ -141,11 +110,8 @@ export default function CatalogoPage() {
 
       </header>
 
-      {/*
-        Franja de filtros. Va a todo el ancho y no dentro del encabezado porque
-        crece: cada filtro nuevo cabe en la fila sin empujar el título, y el
-        resumen de lo puesto aparece debajo cuando hay algo que resumir.
-      */}
+      {/* Franja de filtros, a todo el ancho y fuera del encabezado para que
+          pueda crecer sin empujar el titulo. */}
       <div className="mb-8 border-y border-edge py-4">
         <CatalogoFilters
           categorias={categorias}
@@ -182,8 +148,8 @@ export default function CatalogoPage() {
             ))}
           </div>
 
-          {/* Sólo si queda algo detrás de esta tanda. Nunca ámbar: ese color
-              está reservado a inscribirse, y este botón no lo es. */}
+          {/* Solo si queda algo detras de esta tanda. Nunca ambar: ese color
+              esta reservado a inscribirse, y este boton no lo es. */}
           {hayMas && (
             <div className="mt-8 flex justify-center">
               <button
@@ -221,16 +187,12 @@ function RejillaCargando() {
 }
 
 /**
- * Dos vacíos distintos: no es lo mismo que el filtro no devuelva nada que
- * que todavía no exista ningún evento publicado.
+ * Dos vacios distintos: no es lo mismo que el filtro no devuelva nada que
+ * que todavia no exista ningun evento publicado.
  */
 function VacioCatalogo({ filtrando, categoria, conFechas, tiempo, onVerPasados, onLimpiar }) {
-  /*
-   * «No hay nada próximo» no es lo mismo que «no hay nada publicado», y el
-   * único filtro puesto es el que trae el catálogo de fábrica: en vez de
-   * ofrecer «limpiar filtros» —que no quitaría ninguno visible— se ofrece la
-   * puerta al histórico, que es lo que queda por mirar.
-   */
+  // "No hay nada proximo" no es "no hay nada publicado", y el unico filtro
+  // puesto es el de fabrica: se ofrece el historico, no "limpiar filtros".
   if (!filtrando && tiempo === TIEMPO_EVENTO.PROXIMOS) {
     return (
       <div className="surface space-y-3 bg-card-muted px-4 py-16 text-center">
@@ -251,7 +213,7 @@ function VacioCatalogo({ filtrando, categoria, conFechas, tiempo, onVerPasados, 
           {categoria
             ? `No hay eventos de ${categoria} que coincidan con tu búsqueda.`
             : 'Ningún evento coincide con tu búsqueda.'}
-          {/* Si el rango es lo que está vaciando la rejilla, se sugiere ampliarlo. */}
+          {/* Si el rango es lo que esta vaciando la rejilla, se sugiere ampliarlo. */}
           {conFechas && ' Prueba a ampliar el rango de fechas.'}
         </p>
         <button type="button" onClick={onLimpiar} className="link text-sm">

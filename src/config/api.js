@@ -1,5 +1,5 @@
 /**
- * Configuración de acceso a la API RESTful (PHP + PostgreSQL).
+ * Configuracion de acceso a la API RESTful (PHP + PostgreSQL).
  * La URL base se define en `.env` con VITE_API_URL; ver `.env.example`.
  */
 
@@ -17,16 +17,8 @@ export function apiUrl(path = '') {
 }
 
 /**
- * Construye una URL absoluta hacia un archivo servido desde `public/` del
- * backend (por ejemplo, una imagen subida: `storage/eventos/…`).
- *
- * No es lo mismo que `apiUrl`: esos archivos se sirven directamente desde
- * `public/`, no desde `/api`, así que la base es la de la API sin ese sufijo.
- *
- * `imagen_url` es una columna de texto libre que ya existía antes de que
- * hubiera subida de archivos: algún dato de ejemplo puede traer una URL ya
- * absoluta. Anteponerle la base rompería esa URL, así que se devuelve tal
- * cual si ya lo es.
+ * URL absoluta hacia un archivo de `public/` del backend, que se sirve fuera
+ * de `/api`. Si `path` ya es una URL absoluta se devuelve tal cual.
  *
  * @param {string} path Ruta relativa guardada en la base de datos.
  * @returns {string}

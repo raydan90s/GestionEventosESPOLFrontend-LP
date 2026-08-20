@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AforoBar } from '@components/AforoBar'
 import { CategoryChip } from '@components/CategoryChip'
@@ -10,30 +11,8 @@ import { esPasado } from '@utils/eventoTiempo'
 import { formatDateTime } from '@utils/formatDate'
 
 /**
- * Tarjeta del catálogo.
- *
- * Sigue la maqueta institucional: superficie blanca definida por un borde de
- * 1 px (nada de sombra en reposo), titular en serif y metadatos en grotesca
- * con icono. El pie de la tarjeta —aforo y acciones— se ancla abajo con
- * `mt-auto` para que las tarjetas de una misma fila alineen barras y botones
- * aunque los títulos tengan distinto número de líneas; el `pt-6` garantiza el
- * aire mínimo sobre el separador en la tarjeta más alta, donde `mt-auto` ya no
- * deja hueco.
- *
- * El aforo lo manda el servidor (`cuposDisponibles`), no se calcula aquí.
- * Regla de la paleta: el ámbar queda reservado a la acción de inscribirse, que
- * es el único elemento de acento de la tarjeta.
- *
- * `posicion` sólo escalona la animación de entrada para que la rejilla no
- * aparezca de golpe. Se recorta a las primeras filas: más allá, la espera se
- * notaría más que el efecto.
- *
- * La imagen —si el evento tiene una— va pegada al borde superior, con
- * relación de aspecto fija (`aspect-video` + `object-cover`) para que una
- * foto vertical no descuadre la rejilla; sin redondear más que el propio
- * `.surface`, que ya la recorta con `overflow-hidden`. Sin imagen, el mismo
- * hueco lo ocupa `bg-card-muted`: ningún color de categoría ni ámbar, que
- * quedan reservados a lo que sí distingue un dato.
+ * Tarjeta del catalogo. El pie se ancla con `mt-auto` para que las tarjetas de
+ * una fila alineen barras y botones; el aforo lo manda el servidor.
  *
  * @param {{ event: import('@/types/event').Event, posicion?: number }} props
  */
@@ -41,29 +20,30 @@ export function EventCard({ event, posicion = 0 }) {
   const lleno = event.cuposDisponibles <= 0
   const activo = event.estado === EVENT_STATUS.ACTIVO
   const meta = EVENT_STATUS_META[event.estado]
-  /*
-   * Un evento cuya fecha ya pasó no admite inscripciones —el backend las
-   * rechaza— así que la tarjeta no ofrece el botón ámbar aunque el evento siga
-   * marcado como activo y con cupos. El catálogo sólo los lista si se piden los
-   * pasados a propósito.
-   */
+  // Un evento cuya fecha ya paso no admite inscripciones, asi que la tarjeta
+  // no ofrece el boton aunque siga activo y con cupos.
   const pasado = esPasado(event.fecha)
   const cerrado = lleno || !activo || pasado
   const destino = eventoDetalle(event.id)
+
+  // `imagen_url` es texto libre y puede apuntar a algo que ya no existe. Si la
+  // carga falla se cae al mismo hueco neutro que cuando no hay imagen.
+  const [imagenRota, setImagenRota] = useState(false)
 
   return (
     <article
       className="animate-fade-up surface flex flex-col overflow-hidden transition-shadow hover:shadow-hover"
       style={{ animationDelay: `${Math.min(posicion, 8) * 60}ms` }}
     >
-      {event.imagenUrl ? (
+      {event.imagenUrl && !imagenRota ? (
         <img
           src={assetUrl(event.imagenUrl)}
-          // Decorativa: el título ya está en texto debajo. `lazy` porque en
+          // Decorativa: el titulo ya esta en texto debajo. `lazy` porque en
           // una rejilla de hasta 50 tarjetas se nota cargar todo de golpe.
           alt=""
           aria-hidden="true"
           loading="lazy"
+          onError={() => setImagenRota(true)}
           className="aspect-video w-full object-cover"
         />
       ) : (
@@ -108,7 +88,7 @@ export function EventCard({ event, posicion = 0 }) {
           />
 
           <div className="mt-4 flex items-center gap-3">
-            {/* Ámbar: única acción de acento de la tarjeta. La inscripción se
+            {/* Ambar: unica accion de acento de la tarjeta. La inscripcion se
                 completa en el detalle, que es donde vive el formulario. */}
             {cerrado ? (
               <span className="btn flex-1 cursor-not-allowed bg-card-muted text-fg-subtle">

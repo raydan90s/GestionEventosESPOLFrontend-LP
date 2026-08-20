@@ -4,12 +4,8 @@ import { cn } from '@utils/cn'
 /**
  * Campo de formulario con etiqueta, pista y mensaje de error.
  *
- * El sistema de diseño pide etiqueta **encima** del campo y la pista siempre
- * visible debajo: nada de placeholders que se van al escribir y dejan al
- * usuario sin saber qué se le pedía.
- *
- * El borde se pone rojo sólo cuando hay error; el anillo de foco lo pinta la
- * regla global `:focus-visible` de `@style/index.css`, siempre azul institucional.
+ * La etiqueta va encima y la pista siempre visible debajo, nada de placeholders.
+ * El borde se pone rojo solo cuando hay error; el foco lo pinta `index.css`.
  *
  * @param {{
  *   label: string,

@@ -2,15 +2,15 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { mensajeDeError } from '@services/apiErrors'
 import { AUTOR_MAX, AUTOR_MIN, COMENTARIO_MAX, COMENTARIO_MIN, COMENTARIOS_POR_PAGINA, crearComentario, erroresDeCampo, getComentarios } from '@services/comentariosService'
 
-/** Formulario vacío. */
+/** Formulario vacio. */
 const VACIO = Object.freeze({ autor: '', contenido: '' })
 
 /**
  * Comentarios de un evento: lectura y escritura
  * (RF "Ver comentarios" y "Escribir comentario", Eimmy Ochoa).
  *
- * Tras publicar no se recarga la lista entera: se antepone el comentario que
- * devolvió la API, que ya trae su id y su fecha reales del servidor.
+ * Tras publicar antepone el comentario que devolvio la API, con su id y su
+ * fecha reales, en vez de recargar la lista entera.
  *
  * @param {string | number | undefined} eventoId
  */

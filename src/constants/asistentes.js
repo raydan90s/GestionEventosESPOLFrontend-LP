@@ -1,8 +1,6 @@
 /**
  * Columnas del listado de asistentes, en el orden en que se muestran.
- *
- * Viven en `constants/` y no dentro del componente porque la tabla y la
- * exportación a CSV deben coincidir: si se añade una columna, aparece en las dos.
+ * Viven aqui para que la tabla y la exportacion a CSV no se desincronicen.
  *
  * @typedef {Object} AttendeeColumn
  * @property {keyof import('@/types/event').Attendee} key

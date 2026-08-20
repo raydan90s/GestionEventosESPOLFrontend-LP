@@ -1,4 +1,4 @@
-/** Rutas de la aplicación. Usar estas constantes en vez de strings sueltos. */
+/** Rutas de la aplicacion. Usar estas constantes en vez de strings sueltos. */
 export const ROUTES = Object.freeze({
   CATALOGO: '/',
   EVENTO_NUEVO: '/eventos/nuevo',
@@ -8,34 +8,28 @@ export const ROUTES = Object.freeze({
 })
 
 /**
- * Parámetros de filtrado del catálogo.
- *
- * Viven en la query string y no en el estado de la página porque el buscador
- * está en la navbar y el listado en el catálogo: la URL es el único sitio que
- * ven los dos. De paso, un filtro queda compartible y el botón «atrás» lo
- * deshace.
+ * Parametros de filtrado del catalogo. Viven en la query string porque el
+ * buscador esta en la navbar y el listado en el catalogo.
  */
 export const CATALOGO_PARAMS = Object.freeze({
   Q: 'q',
   CATEGORIA: 'categoria',
-  /** Atajo de rango (`hoy`, `semana`…) o `personalizado`; ver `@constants/rangosFecha`. */
+  /** Atajo de rango (`hoy`, `semana`...) o `personalizado`; ver `@constants/rangosFecha`. */
   FECHA: 'fecha',
   DESDE: 'desde',
   HASTA: 'hasta',
   /**
-   * Momento del catálogo: `proximos` (por defecto y omitido en la URL),
+   * Momento del catalogo: `proximos` (por defecto y omitido en la URL),
    * `pasados` o `todos`; ver `@constants/tiempoEvento`.
    */
   TIEMPO: 'tiempo',
-  /** Sólo eventos con cupo libre. */
+  /** Solo eventos con cupo libre. */
   DISPONIBLES: 'disponibles',
 })
 
 /**
- * Valor con el que un filtro de sí/no viaja en la URL.
- *
- * Se guarda el `1` y se omite el `0`: un parámetro presente es el filtro
- * puesto, y así la URL sin filtros queda literalmente vacía.
+ * Valor con el que un filtro de si/no viaja en la URL: se guarda el `1` y se
+ * omite el `0`, asi la URL sin filtros queda vacia.
  */
 export const ACTIVO = '1'
 
@@ -47,7 +41,7 @@ export const ACTIVO = '1'
 export const eventoDetalle = (id) => `/eventos/${id}`
 
 /**
- * Construye la ruta de edición de un evento.
+ * Construye la ruta de edicion de un evento.
  * @param {string | number} id
  * @returns {string}
  */

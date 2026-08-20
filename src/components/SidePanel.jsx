@@ -4,15 +4,8 @@ import { CloseIcon } from '@components/icons'
 /**
  * Panel lateral modal, deslizado desde la derecha sobre la vista actual.
  *
- * Es un `<dialog>` nativo abierto con `showModal()`, no un `div` con
- * `position: fixed`. Así el navegador se encarga gratis de lo que suele salir
- * mal en un modal hecho a mano: atrapar el foco dentro, cerrar con Escape,
- * dejar inerte y sin scroll todo lo que hay detrás, y ponerlo en la capa
- * superior sin pelearse con ningún `z-index`.
- *
- * El contenido se recibe entero (`children`) para que quepa un `<form>` con su
- * propia zona de scroll y su pie de botones; el panel sólo pone el marco y la
- * cabecera.
+ * Es un `<dialog>` nativo abierto con `showModal()`: el navegador atrapa el
+ * foco, cierra con Escape y deja inerte el fondo sin pelear con `z-index`.
  *
  * @param {{
  *   titulo: string,
@@ -28,9 +21,8 @@ export function SidePanel({ titulo, onClose, children }) {
     const elemento = dialogo.current
     if (!elemento.open) elemento.showModal()
 
-    // Al desmontar se cierra sin avisar a `onClose`: el cierre ya lo decidió
-    // quien nos desmontó. Por eso se escucha `cancel` (Escape) y no `close`,
-    // que también dispararía aquí y provocaría una segunda navegación.
+    // Al desmontar se cierra sin avisar a `onClose`. Se escucha `cancel`
+    // (Escape) y no `close`, que provocaria una segunda navegacion.
     return () => elemento.close()
   }, [])
 

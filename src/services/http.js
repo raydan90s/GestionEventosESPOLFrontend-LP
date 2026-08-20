@@ -16,15 +16,14 @@ export class ApiError extends Error {
 }
 
 /**
- * Envoltura mínima sobre fetch para hablar con la API PHP.
+ * Envoltura minima sobre fetch para hablar con la API PHP.
  * @param {string} path
  * @param {RequestInit} [options]
  * @returns {Promise<any>}
  */
 export async function request(path, options = {}) {
-  // Con un `FormData` (subida de archivos) no se fija `Content-Type`: el
-  // navegador tiene que ponerlo él mismo con el `boundary` que genera.
-  // Fijarlo a mano rompería la petición.
+  // Con `FormData` no se fija `Content-Type`: lo pone el navegador con su
+  // `boundary`, y fijarlo a mano romperia la peticion.
   const esFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
 
   const response = await fetch(apiUrl(path), {
@@ -50,8 +49,8 @@ export async function request(path, options = {}) {
 export const http = {
   /**
    * @param {string} path
-   * @param {Record<string, unknown>} [params] Los valores vacíos no viajan en la query.
-   * @param {RequestInit} [options] Útil para pasar un `signal` y cancelar la petición.
+   * @param {Record<string, unknown>} [params] Los valores vacios no viajan en la query.
+   * @param {RequestInit} [options] Util para pasar un `signal` y cancelar la peticion.
    */
   get: (path, params, options) => {
     const search = params

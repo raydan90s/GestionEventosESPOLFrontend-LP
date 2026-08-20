@@ -4,8 +4,7 @@ import { toIso } from '@utils/apiDate'
 
 /**
  * Comentarios de un evento.
- *
- * RF "Ver comentarios de evento" y "Escribir comentario de evento" (Eimmy Ochoa).
+ * RF "Ver comentarios" y "Escribir comentario" (Eimmy Ochoa).
  */
 
 /** Nombre que espera la API para cada campo del formulario. */
@@ -31,7 +30,7 @@ const toComment = (row) => ({
 })
 
 /**
- * Comentarios de un evento, del más reciente al más antiguo.
+ * Comentarios de un evento, del mas reciente al mas antiguo.
  * @param {string | number} eventoId
  * @param {{ limite?: number, offset?: number, signal?: AbortSignal }} [opciones]
  * @returns {Promise<{ total: number, comentarios: import('@/types/event').Comment[] }>}
@@ -63,7 +62,7 @@ export async function crearComentario(eventoId, datos) {
   return toComment(respuesta.data)
 }
 
-/** Límites que impone la base: `contenido` es `CHECK (char_length BETWEEN 3 AND 1000)`. */
+/** Limites que impone la base: `contenido` es `CHECK (char_length BETWEEN 3 AND 1000)`. */
 export const COMENTARIO_MAX = 1000
 export const COMENTARIO_MIN = 3
 export const AUTOR_MAX = 120
@@ -73,7 +72,7 @@ export const AUTOR_MIN = 3
 export const COMENTARIOS_POR_PAGINA = 20
 
 /**
- * Errores de validación del formulario de comentario.
+ * Errores de validacion del formulario de comentario.
  * @param {unknown} error
  * @returns {Record<string, string>}
  */

@@ -2,15 +2,10 @@ import { AFORO_BAR_CLASS, aforoNivel, aforoPorcentaje, cuposDisponibles } from '
 import { cn } from '@utils/cn'
 
 /**
- * Indicador de ocupación: rótulo, cifra, barra y cupos restantes.
+ * Indicador de ocupacion: rotulo, cifra, barra y cupos restantes.
  *
- * `cuposDisponibles` es el que manda el servidor y tiene prioridad: es la única
- * cifra fiable, porque la calcula la misma transacción que descuenta el cupo.
- * Sólo si no llega se deduce restando los inscritos del aforo.
- *
- * La barra va en azul institucional y se pone roja únicamente cuando no queda
- * ni un cupo; los eventos apretados se avisan resaltando el texto, no tiñendo
- * la barra de ámbar (ver PALETA.md §2).
+ * Manda el `cuposDisponibles` del servidor; si no llega se deduce del aforo.
+ * La barra solo se pone roja cuando no queda ni un cupo (ver PALETA.md §2).
  *
  * @param {{
  *   inscritos: number,

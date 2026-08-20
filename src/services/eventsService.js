@@ -3,16 +3,8 @@ import { http } from '@services/http'
 import { finDelDia, inicioDelDia, toIso } from '@utils/apiDate'
 
 /**
- * Eventos del catálogo.
- *
- * RF "Ver catálogo de eventos" y "Crear evento" (Juliana Burgos).
- *
- * Como en el resto de la capa de servicios, la API responde en snake_case y
- * aquí se traduce a camelCase: ningún componente ve una clave de la base.
- *
- * Las inscripciones y el listado de asistentes viven en
- * `@services/inscripcionesService`; los comentarios, en
- * `@services/comentariosService`.
+ * Eventos del catalogo. RF "Ver catalogo de eventos" y "Crear evento"
+ * (Juliana Burgos). Traduce el snake_case de la API a camelCase.
  */
 
 /**
@@ -31,24 +23,16 @@ export const toEvent = (row) => ({
   cuposDisponibles: Number(row.cupos_disponibles ?? 0),
   inscritos: Number(row.inscritos ?? 0),
   organizador: String(row.organizador ?? ''),
-  // Nullable en la base: la condición evita que un `null` se convierta en
-  // la cadena literal "null" al envolverlo en `String()`.
+  // Nullable en la base: evita que un `null` acabe como la cadena "null".
   imagenUrl: row.imagen_url ? String(row.imagen_url) : '',
   estado: String(row.estado ?? ''),
 })
 
 /**
- * Catálogo de eventos, con filtros opcionales y paginación.
+ * Catalogo de eventos, con filtros opcionales y paginacion.
  *
- * El filtrado lo hace el backend (SQL), no el cliente: así el catálogo puede
- * crecer sin que la vista tenga que descargarlo entero para poder filtrarlo.
- * Por la misma razón el backend también pagina (50 por tanda como máximo) y
- * por eso esta función devuelve el `total` de la consulta completa junto con
- * la tanda pedida, igual que `getComentarios`: sin el total, quien pinta la
- * lista no puede saber si hay más páginas detrás de la que acaba de recibir.
- *
- * `desde` y `hasta` llegan como fecha suelta (`YYYY-MM-DD`, lo que da un
- * `<input type="date">`) y salen como instante ISO: ver `@utils/apiDate`.
+ * El filtrado y la paginacion (50 por tanda) los hace el backend, de ahi el
+ * `total`. `desde` y `hasta` entran `YYYY-MM-DD` y salen ISO (`@utils/apiDate`).
  *
  * @param {{ categoriaId?: number|string, q?: string, desde?: string, hasta?: string,
  *           soloProximos?: boolean, soloPasados?: boolean, soloDisponibles?: boolean,
@@ -65,11 +49,9 @@ export async function getEvents(filtros = {}, { signal } = {}) {
       estado: filtros.estado,
       fecha_desde: inicioDelDia(filtros.desde),
       fecha_hasta: finDelDia(filtros.hasta),
-      // La API espera cadenas: `false` se descarta en http.get y el filtro
-      // simplemente no viaja, que es justo lo que queremos.
+      // La API espera cadenas; con `false` el filtro no llega a viajar.
       solo_proximos: filtros.soloProximos ? 'true' : undefined,
-      // El histórico lo devuelve el backend (`fecha_evento < NOW()`) y en orden
-      // inverso: de un pasado se mira primero lo más reciente.
+      // El backend lo devuelve en orden inverso: primero lo mas reciente.
       solo_pasados: filtros.soloPasados ? 'true' : undefined,
       solo_disponibles: filtros.soloDisponibles ? 'true' : undefined,
       limite: filtros.limite,
@@ -97,8 +79,7 @@ export async function getEvent(id, { signal } = {}) {
 }
 
 /**
- * Payload snake_case común a crear y actualizar: los mismos campos, sólo
- * cambia a qué endpoint y con qué verbo viajan.
+ * Payload snake_case comun a crear y actualizar.
  *
  * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
  *           lugar: string, fecha: string, cupoMaximo: number|string,
@@ -125,9 +106,8 @@ const aPayload = (datos) => {
 }
 
 /**
- * Crea un evento.
- *
- * `cuposDisponibles` no se envía: el backend lo iguala al aforo máximo al crear.
+ * Crea un evento. `cuposDisponibles` no se envia: el backend lo iguala al
+ * aforo maximo.
  *
  * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
  *           lugar: string, fecha: string, cupoMaximo: number|string,
@@ -141,9 +121,8 @@ export async function createEvent(datos) {
 }
 
 /**
- * Actualiza un evento existente. Mismo payload que `createEvent`;
- * `cuposDisponibles` tampoco se envía aquí, lo recalcula el backend a partir
- * del aforo nuevo y los inscritos que ya tiene.
+ * Actualiza un evento. Mismo payload que `createEvent`; `cuposDisponibles`
+ * lo recalcula el backend.
  *
  * @param {string | number} id
  * @param {{ titulo: string, descripcion?: string, categoriaId: number|string,
@@ -167,10 +146,8 @@ export async function deleteEvent(id) {
 }
 
 /**
- * Sube la imagen de un evento ya creado. Va separada de `createEvent` y
- * `updateEvent` porque es un endpoint aparte (`multipart/form-data`, no
- * JSON): así los dos siguen enviando JSON como siempre y no hay que
- * convertir todo el formulario a multipart por un campo opcional.
+ * Sube la imagen de un evento ya creado. Va aparte porque es un endpoint
+ * `multipart/form-data` y no JSON.
  *
  * @param {string | number} id
  * @param {File} archivo
@@ -197,8 +174,8 @@ const CAMPO_FORM = Object.freeze({
 })
 
 /**
- * Errores de validación del formulario de evento, con las claves del formulario
- * (`lugar`, `cupoMaximo`) y no las de la API (`ubicacion`, `cupos_maximos`).
+ * Errores de validacion con las claves del formulario (`lugar`, `cupoMaximo`)
+ * y no las de la API (`ubicacion`, `cupos_maximos`).
  *
  * @param {unknown} error
  * @returns {Record<string, string>}

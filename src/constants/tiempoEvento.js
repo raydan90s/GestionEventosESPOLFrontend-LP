@@ -1,16 +1,6 @@
 /**
- * Momento del catálogo: si se listan los eventos que están por venir, los que
- * ya se realizaron o todos.
- *
- * No es un interruptor de sí/no sino tres opciones porque el catálogo tiene un
- * valor por defecto que no es «sin filtro»: **lo normal es ver sólo lo que
- * queda por venir**. Un evento cuya fecha ya pasó no admite inscripciones —el
- * backend las rechaza (`El evento ya se realizo`)— así que listarlo entre los
- * demás sólo lleva a intentar apuntarse a algo imposible. El histórico sigue
- * disponible, pero hay que pedirlo.
- *
- * Viaja en la URL como `tiempo=pasados`; el valor por defecto se omite, para
- * que el catálogo sin filtros tenga la query string vacía.
+ * Momento del catalogo: proximos, pasados o todos. Por defecto solo los
+ * proximos, porque el backend rechaza inscribirse a un evento ya realizado.
  */
 
 export const TIEMPO_EVENTO = Object.freeze({
@@ -46,10 +36,8 @@ export const TIEMPOS = Object.freeze([
 ])
 
 /**
- * Normaliza el parámetro `tiempo` de la URL.
- *
- * Un valor desconocido —una URL escrita a mano, una opción que ya no existe—
- * cae en el de por defecto en vez de dejar el catálogo sin criterio.
+ * Normaliza el parametro `tiempo` de la URL. Un valor desconocido cae en el
+ * de por defecto.
  *
  * @param {string | null} valor
  * @returns {string}
@@ -58,7 +46,7 @@ export const resolverTiempo = (valor) =>
   TIEMPOS.some((tiempo) => tiempo.clave === valor) ? valor : TIEMPO_POR_DEFECTO
 
 /**
- * Etiqueta visible de una opción.
+ * Etiqueta visible de una opcion.
  * @param {string} clave
  * @returns {string}
  */

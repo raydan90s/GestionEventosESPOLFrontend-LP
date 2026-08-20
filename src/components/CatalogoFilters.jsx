@@ -12,21 +12,16 @@ import {
 import { cn } from '@utils/cn'
 
 /**
- * A partir de aquí las categorías dejan de ser chips y pasan a un desplegable
- * con buscador. Seis caben en una fila sin envolver el encabezado; veinte
- * convertirían la barra en un muro y obligarían a leerlas todas para elegir una.
+ * A partir de aqui las categorias pasan de chips a un desplegable con buscador:
+ * seis caben en una fila, veinte convertirian la barra en un muro.
  */
 const MAX_CHIPS = 6
 
 /**
- * Barra de filtros del catálogo (RF "Ver catálogo de eventos").
+ * Barra de filtros del catalogo (RF "Ver catalogo de eventos").
  *
- * Todos los filtros viven en la query string y los resuelve el backend en SQL;
- * este componente sólo los escribe. La barra está pensada para un catálogo que
- * crece: cada filtro ocupa un botón de ancho fijo —abra una lista de tres
- * categorías o de cincuenta— y debajo se resume en chips lo que hay puesto,
- * para que se pueda quitar uno sin tener que abrir el desplegable de donde
- * salió ni perder los demás.
+ * Los filtros viven en la query string y los resuelve el backend; aqui solo se
+ * escriben. Cada filtro ocupa un boton fijo y lo puesto se resume en chips.
  *
  * @param {{
  *   categorias: import('@/types/event').Category[],
@@ -39,7 +34,7 @@ const MAX_CHIPS = 6
  */
 export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, onFiltrar, onLimpiar }) {
   const categoriaActiva = categorias.find(
-    // El id de la URL es texto y el de la API número: se comparan como texto.
+    // El id de la URL es texto y el de la API numero: se comparan como texto.
     (categoria) => String(categoria.id) === filtros.categoriaId,
   )
 
@@ -54,11 +49,8 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
       [CATALOGO_PARAMS.HASTA]: null,
     })
 
-  /*
-   * Resumen de lo que hay puesto, en el mismo orden que la barra. Se arma como
-   * lista y no como JSX suelto para que la franja sepa si está vacía sin tener
-   * que comprobar seis condiciones por su cuenta.
-   */
+  // Resumen de lo puesto, en el orden de la barra. Es una lista y no JSX suelto
+  // para que la franja sepa si esta vacia sin comprobar seis condiciones.
   const activos = [
     filtros.q.trim() !== '' && {
       clave: 'q',
@@ -71,12 +63,8 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
       quitar: () => onFiltrar({ [CATALOGO_PARAMS.CATEGORIA]: null }),
     },
     conFechas && { clave: 'fecha', texto: etiquetaFecha, quitar: limpiarFechas },
-    /*
-     * «Próximos» es lo que el catálogo hace de fábrica, así que no se resume
-     * como filtro puesto: sólo aparece cuando se ha pedido otra cosa, y
-     * quitarlo devuelve al valor por defecto en vez de dejar el catálogo sin
-     * criterio temporal.
-     */
+    // "Proximos" es lo de fabrica, asi que no se resume como filtro puesto:
+    // quitarlo devuelve al valor por defecto.
     filtros.tiempo !== TIEMPO_POR_DEFECTO && {
       clave: 'tiempo',
       texto: etiquetaDeTiempo(filtros.tiempo),
@@ -112,17 +100,14 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
           onElegir={(clave) =>
             onFiltrar({
               // El valor por defecto se borra de la URL en vez de escribirse:
-              // el catálogo sin filtros tiene la query string vacía.
+              // el catalogo sin filtros tiene la query string vacia.
               [CATALOGO_PARAMS.TIEMPO]: clave === TIEMPO_POR_DEFECTO ? null : clave,
             })
           }
         />
 
-        {/*
-          «Con cupo» es de los filtros que más se repiten y no esconde ninguna
-          lista, así que va suelto en la barra: uno pulsa, la rejilla responde.
-          Lo resuelve el backend (`solo_disponibles`), no el cliente.
-        */}
+        {/* Va suelto en la barra porque no esconde ninguna lista.
+            Lo resuelve el backend (`solo_disponibles`). */}
         <Interruptor
           activo={filtros.disponibles}
           onClick={() =>
@@ -151,11 +136,8 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
         </div>
       )}
 
-      {/*
-        El navegador ya impide elegir un rango al revés con `min`/`max`, pero la
-        URL se puede escribir a mano: si llega invertido, se dice en vez de
-        devolver una rejilla vacía sin explicación.
-      */}
+      {/* El navegador impide invertir el rango, pero la URL se escribe a mano:
+          si llega asi, se avisa en vez de devolver una rejilla vacia. */}
       {rangoInvalido && (
         <p role="alert" className="text-xs text-danger">
           La fecha final es anterior a la inicial: ningún evento puede coincidir.
@@ -166,9 +148,8 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
 }
 
 /**
- * Categoría. Con pocas, chips a la vista —elegir es un clic y se ven todas las
- * opciones—; en cuanto son muchas, un desplegable con buscador, que es lo único
- * que aguanta un catálogo que sigue añadiendo categorías.
+ * Categoria: chips cuando son pocas y un desplegable con buscador en cuanto
+ * pasan de `MAX_CHIPS`.
  */
 function FiltroCategoria({ categorias, categoriaId, activa, onElegir }) {
   if (categorias.length === 0) return null
@@ -205,7 +186,7 @@ function FiltroCategoria({ categorias, categoriaId, activa, onElegir }) {
           categoriaId={categoriaId}
           onElegir={(id) => {
             onElegir(id)
-            // Elegir categoría cierra: es una opción entre muchas, no un ajuste
+            // Elegir categoria cierra: es una opcion entre muchas, no un ajuste
             // que se retoque varias veces seguidas como el rango de fechas.
             cerrar()
           }}
@@ -215,7 +196,7 @@ function FiltroCategoria({ categorias, categoriaId, activa, onElegir }) {
   )
 }
 
-/** Lista buscable de categorías. Vive dentro del desplegable, cuando hay muchas. */
+/** Lista buscable de categorias. Vive dentro del desplegable, cuando hay muchas. */
 function ListaCategorias({ categorias, categoriaId, onElegir }) {
   const [busqueda, setBusqueda] = useState('')
 
@@ -236,14 +217,14 @@ function ListaCategorias({ categorias, categoriaId, onElegir }) {
           onChange={(campo) => setBusqueda(campo.target.value)}
           placeholder="Buscar categoría…"
           aria-label="Buscar categoría"
-          // El foco entra aquí al abrir: con la lista larga, escribir es más
-          // rápido que recorrerla, y quien use el teclado ya está en el campo.
+          // El foco entra aqui al abrir: con la lista larga, escribir es mas
+          // rapido que recorrerla, y quien use el teclado ya esta en el campo.
           autoFocus
           className="field py-2 pl-9 text-sm"
         />
       </div>
 
-      {/* La altura está acotada: la lista puede crecer sin empujar el panel
+      {/* La altura esta acotada: la lista puede crecer sin empujar el panel
           fuera de la pantalla. */}
       <ul className="max-h-64 space-y-0.5 overflow-y-auto">
         <li>
@@ -275,13 +256,8 @@ function ListaCategorias({ categorias, categoriaId, onElegir }) {
 }
 
 /**
- * Una fila de la lista de categorías. Es un botón con `aria-pressed` y no una
- * opción de `listbox`: la lista se recorre con el tabulador como cualquier
- * otra, sin el teclado propio que un `listbox` obliga a implementar.
- *
- * La elegida se marca con el check azul y la negrita, no con un color propio:
- * en una lista larga, un color por fila es ruido y ninguno dice cuál está
- * puesta.
+ * Fila de la lista de categorias. Es un boton con `aria-pressed` y no una
+ * opcion de `listbox`, para no implementar el teclado que este obliga.
  */
 function OpcionCategoria({ seleccionada, onClick, children }) {
   return (
@@ -301,14 +277,8 @@ function OpcionCategoria({ seleccionada, onClick, children }) {
 }
 
 /**
- * Momento del catálogo: próximos, pasados o todos.
- *
- * Va en un desplegable y no en tres chips porque no es un interruptor: siempre
- * hay una opción puesta —de fábrica, «Próximos»— y el botón tiene que decir
- * cuál es sin que haya que leer una fila de chips para deducirlo.
- *
- * Elegir cierra el panel: es una opción entre tres, no un ajuste que se retoque
- * varias veces seguidas como el rango de fechas.
+ * Momento del catalogo: proximos, pasados o todos. Va en desplegable porque
+ * siempre hay una opcion puesta y el boton tiene que decir cual es.
  */
 function FiltroTiempo({ tiempo, onElegir }) {
   return (
@@ -342,8 +312,8 @@ function FiltroTiempo({ tiempo, onElegir }) {
                   >
                     {opcion.etiqueta}
                   </span>
-                  {/* El resumen explica qué se deja fuera: «pasados» sin más no
-                      dice que esos eventos ya no admitan inscripción. */}
+                  {/* El resumen explica que se deja fuera: "pasados" sin mas no
+                      dice que esos eventos ya no admitan inscripcion. */}
                   <span className="block text-xs text-fg-subtle">{opcion.resumen}</span>
                 </span>
 
@@ -360,11 +330,8 @@ function FiltroTiempo({ tiempo, onElegir }) {
 }
 
 /**
- * Fechas. Los atajos resuelven el caso normal («esta semana») en un clic y sin
- * escribir dos fechas; el rango a medida sigue debajo para lo demás.
- *
- * Elegir no cierra el panel: encadenar atajo y ajuste a mano es lo habitual, y
- * cerrarlo obligaría a volver a abrirlo para corregir un día.
+ * Fechas: los atajos resuelven el caso normal en un clic y el rango a medida
+ * queda debajo. Elegir no cierra el panel, para poder corregir un dia.
  */
 function FiltroFecha({ filtros, etiqueta, rangoInvalido, onFiltrar, onLimpiar }) {
   const aMedida = filtros.fecha === RANGO_PERSONALIZADO || filtros.fecha === null
@@ -387,8 +354,8 @@ function FiltroFecha({ filtros, etiqueta, rangoInvalido, onFiltrar, onLimpiar })
                   onClick={() =>
                     onFiltrar({
                       [CATALOGO_PARAMS.FECHA]: rango.clave,
-                      // El atajo manda: un rango escrito antes dejaría la URL
-                      // con dos filtros de fecha y sólo uno visible.
+                      // El atajo manda: un rango escrito antes dejaria la URL
+                      // con dos filtros de fecha y solo uno visible.
                       [CATALOGO_PARAMS.DESDE]: null,
                       [CATALOGO_PARAMS.HASTA]: null,
                     })
@@ -421,8 +388,8 @@ function FiltroFecha({ filtros, etiqueta, rangoInvalido, onFiltrar, onLimpiar })
                 onChange={(valor) =>
                   onFiltrar({
                     [CATALOGO_PARAMS.DESDE]: valor,
-                    // Escribir una fecha convierte el filtro en «a medida»:
-                    // si venía de un atajo, deja de estar elegido.
+                    // Escribir una fecha convierte el filtro en "a medida":
+                    // si venia de un atajo, deja de estar elegido.
                     [CATALOGO_PARAMS.FECHA]: valor ? RANGO_PERSONALIZADO : null,
                     ...(aMedida ? {} : { [CATALOGO_PARAMS.HASTA]: null }),
                   })
@@ -483,9 +450,8 @@ function CampoFecha({ id, label, value, onChange, min, max, invalid }) {
 }
 
 /**
- * Filtro de categoría en chip: gris en reposo y azul institucional cuando está
- * puesto, nunca ámbar. Un único color para toda la fila —lo decide
- * `.filter-chip`— para que el que está elegido sea lo único que resalte.
+ * Filtro de categoria en chip: gris en reposo y azul cuando esta puesto.
+ * Un unico color para toda la fila, lo decide `.filter-chip`.
  */
 function FiltroChip({ active, onClick, children }) {
   return (
@@ -500,7 +466,7 @@ function FiltroChip({ active, onClick, children }) {
   )
 }
 
-/** Filtro de sí/no. Mismo chip que las categorías, sin color propio. */
+/** Filtro de si/no. Mismo chip que las categorias, sin color propio. */
 function Interruptor({ activo, onClick, children }) {
   return (
     <button
@@ -515,8 +481,8 @@ function Interruptor({ activo, onClick, children }) {
 }
 
 /**
- * Un filtro puesto, en el resumen. La × quita sólo ése: los demás siguen, que
- * es la diferencia con «Limpiar todo».
+ * Un filtro puesto, en el resumen. La × quita solo ese: los demas siguen, que
+ * es la diferencia con "Limpiar todo".
  */
 function ChipActivo({ onQuitar, children }) {
   return (

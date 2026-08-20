@@ -1,13 +1,10 @@
 /*
- * Tokens del «EventosESPOL Digital System».
- *
- * El sistema es institucional y editorial: superficies casi blancas con un
- * tinte azul, profundidad por borde de 1 px en vez de sombra, esquinas de 4 px
- * y titulares en serif. Ver docs/PALETA.md.
+ * Tokens del "EventosESPOL Digital System": superficies casi blancas, borde de
+ * 1 px en vez de sombra, esquinas de 4 px y titulares en serif. Ver PALETA.md.
  */
 
 :root {
-  /* superficies — capas tonales, no sombras */
+  /* superficies - capas tonales, no sombras */
   --bg: #f8f9ff;
   --panel: #ffffff;
   --panel-hover: #f4f7ff;
@@ -24,19 +21,19 @@
   --text-muted: #424751;
   --text-subtle: #727782;
 
-  /* marca — azul institucional ESPOL */
+  /* marca - azul institucional ESPOL */
   --primary: #2563ab;
   --primary-hover: #1a4d8f;
   --primary-active: #143c72;
   --primary-soft: #d5e3ff;
   --on-primary: #ffffff;
 
-  /* azul profundo: logotipo, botón de la navbar y titulares */
+  /* azul profundo: logotipo, boton de la navbar y titulares */
   --secondary: #004b8d;
   --secondary-hover: #00396d;
   --on-secondary: #ffffff;
 
-  /* acento — ámbar, solo para acción e inscripción */
+  /* acento - ambar, solo para accion e inscripcion */
   --accent: #e07b1e;
   --accent-hover: #b85f12;
   --accent-soft: #fdf0dc;
@@ -48,33 +45,33 @@
   --danger:  #ba1a1a;  --danger-soft:  #ffdad6;
   --info:    #2563ab;  --info-soft:    #d5e3ff;
 
-  /* categorías de evento */
+  /* categorias de evento */
   --cat-taller:    #0e7f73;
   --cat-club:      #6d3fb0;
   --cat-seminario: #2563ab;
   --cat-deporte:   #3f7f22;
   --cat-cultura:   #b03571;
   --cat-emprendimiento: #934b00;
-  /* Color de reserva para una categoría que la base tenga y la paleta no. */
+  /* Color de reserva para una categoria que la base tenga y la paleta no. */
   --cat-otra:      #545a66;
 
   /*
-   * Forma: el sistema es «soft y contenido». 4 px en tarjetas, botones y
-   * campos; la píldora queda para los filtros y las barras de progreso.
+   * Forma: el sistema es "soft y contenido". 4 px en tarjetas, botones y
+   * campos; la pildora queda para los filtros y las barras de progreso.
    */
   --radius-card: 4px;
   --radius-chip: 4px;
   --radius-pill: 999px;
 
   /*
-   * Profundidad por borde. No hay sombra en reposo: sólo al pasar el cursor
+   * Profundidad por borde. No hay sombra en reposo: solo al pasar el cursor
    * por una tarjeta y en elementos que flotan sobre el contenido.
    */
   --shadow-hover: 0 2px 8px rgb(18 28 40 / .08);
   --shadow-pop: 0 8px 28px rgb(18 28 40 / .14);
 
   /*
-   * '… Variable' es el nombre que registran los paquetes @fontsource-variable;
+   * '... Variable' es el nombre que registran los paquetes @fontsource-variable;
    * el nombre sin sufijo cubre el caso de tenerlas instaladas en el sistema.
    */
   --font-serif: 'Source Serif 4 Variable', 'Source Serif 4', Georgia, serif;

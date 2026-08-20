@@ -5,17 +5,14 @@ import {
   registrarInscripcion,
 } from '@services/inscripcionesService'
 
-/** Formulario vacío. */
+/** Formulario vacio. */
 const VACIO = Object.freeze({ nombre: '', correo: '', matricula: '', telefono: '' })
 
 /**
- * Estado del formulario de inscripción (RF "Registrar inscripción").
+ * Estado del formulario de inscripcion (RF "Registrar inscripcion").
  *
- * Separa tres tipos de fallo, porque cada uno se pinta distinto:
- * - `errores`: validación por campo (HTTP 422), debajo del input correspondiente.
- * - `conflicto`: el evento no admite la inscripción —sin cupos, correo repetido,
- *   evento cancelado o ya realizado— (HTTP 409). Es un aviso, no un error del usuario.
- * - `error`: cualquier otra cosa (red caída, 500).
+ * Separa tres fallos: `errores` (validacion 422, por campo), `conflicto` (409,
+ * el evento no admite la inscripcion) y `error` (red caida, 500).
  *
  * @param {string | number} eventoId
  * @param {(registro: import('@/types/event').Registration) => void} [onExito]

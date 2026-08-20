@@ -16,24 +16,22 @@ import { esPasado } from '@utils/eventoTiempo'
 import { formatDateTime } from '@utils/formatDate'
 
 /**
- * Detalle de un evento: datos, aforo, inscripción y comentarios.
+ * Detalle de un evento: datos, aforo, inscripcion y comentarios.
  *
- * Dos columnas en escritorio: a la izquierda la lectura (ficha, descripción y
- * comentarios) y a la derecha, fija al hacer scroll, la decisión — el aforo y
- * el formulario de inscripción. Así el CTA no se pierde bajo un hilo largo de
- * comentarios. En móvil todo se apila y la inscripción queda antes del hilo.
+ * Dos columnas en escritorio, con el aforo y la inscripcion fijos a la derecha
+ * para que no se pierdan bajo el hilo. En movil se apila todo.
  */
 export default function EventoDetallePage() {
   const { id } = useParams()
   const location = useLocation()
   const { evento, cargando, error, recargar } = useEvento(id)
 
-  /*
-   * El panel de editar cierra volviendo a esta misma URL, así que esta página
-   * nunca se desmonta durante el viaje de ida y vuelta y `useEvento` no vuelve
-   * a pedir el evento por sí solo. `EventoEditarPage` avisa con esta marca en
-   * el `state` de la navegación, y aquí se traduce a un `recargar()` explícito.
-   */
+  // Mismo criterio que `EventCard`: una `imagen_url` que ya no resuelve se
+  // omite en vez de dejar el icono de imagen rota.
+  const [imagenRota, setImagenRota] = useState(false)
+
+  // El panel de editar vuelve a esta misma URL sin desmontar la pagina, asi que
+  // `EventoEditarPage` avisa por el `state` y aqui se traduce a `recargar()`.
   useEffect(() => {
     if (location.state?.eventoActualizado) recargar()
   }, [location.state?.eventoActualizado, recargar])
@@ -70,8 +68,8 @@ export default function EventoDetallePage() {
 
   const activo = evento.estado === EVENT_STATUS.ACTIVO
   const meta = EVENT_STATUS_META[evento.estado]
-  // La fecha cierra la inscripción igual que el estado: el backend rechaza
-  // apuntarse a un evento que ya se realizó, así que no se ofrece el formulario.
+  // La fecha cierra la inscripcion igual que el estado: el backend rechaza
+  // apuntarse a un evento que ya se realizo, asi que no se ofrece el formulario.
   const pasado = esPasado(evento.fecha)
 
   return (
@@ -85,18 +83,15 @@ export default function EventoDetallePage() {
         <AccionesOrganizador evento={evento} />
       </div>
 
-      {/* Aviso aparte, no un error: el evento en sí se guardó bien. */}
+      {/* Aviso aparte, no un error: el evento en si se guardo bien. */}
       {location.state?.imagenFallida && (
         <p role="alert" className="surface bg-danger-soft px-4 py-3 text-sm text-danger">
           {location.state.mensajeImagen}
         </p>
       )}
 
-      {/*
-        La cabecera va fuera de la rejilla a propósito: si viviera en la columna
-        izquierda, en móvil la barra lateral se apilaría entera antes o después
-        de ella, y el título tiene que ir siempre primero.
-      */}
+      {/* La cabecera va fuera de la rejilla: dentro de la columna izquierda,
+          en movil el titulo dejaria de ir primero. */}
       <header className="max-w-3xl space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <CategoryChip nombre={evento.categoriaNombre} />
@@ -130,10 +125,11 @@ export default function EventoDetallePage() {
 
       <div className="grid gap-10 lg:grid-cols-3">
         <div className="space-y-8 lg:col-span-2">
-          {evento.imagenUrl && (
+          {evento.imagenUrl && !imagenRota && (
             <img
               src={assetUrl(evento.imagenUrl)}
               alt=""
+              onError={() => setImagenRota(true)}
               className="aspect-video w-full rounded-card border border-edge object-cover"
             />
           )}
@@ -147,7 +143,7 @@ export default function EventoDetallePage() {
           <ComentariosSection eventoId={evento.id} />
         </div>
 
-        {/* La inscripción se apila antes del hilo en móvil y se fija en escritorio. */}
+        {/* La inscripcion se apila antes del hilo en movil y se fija en escritorio. */}
         <aside className="order-first space-y-4 lg:order-none lg:sticky lg:top-24 lg:self-start">
           <div className="surface space-y-4 p-6">
             <AforoBar
@@ -166,13 +162,8 @@ export default function EventoDetallePage() {
           </div>
 
           {activo && !pasado ? (
-            /*
-             * `cuposDisponibles` viene del servidor, así que el botón ya se puede
-             * deshabilitar antes de enviar. Aun así el backend vuelve a validar el
-             * aforo dentro de una transacción: esta prop es comodidad, no control.
-             * Tras inscribirse se recarga el evento para que la barra refleje el
-             * cupo que acaba de descontar el servidor.
-             */
+            // `cuposDisponibles` permite deshabilitar el boton antes de enviar,
+            // pero el backend revalida el aforo: es comodidad, no control.
             <InscripcionForm
               eventoId={evento.id}
               cuposDisponibles={evento.cuposDisponibles}
@@ -192,15 +183,8 @@ export default function EventoDetallePage() {
 }
 
 /**
- * Editar y eliminar el evento (Tarea 5 — "sólo si da el tiempo").
- *
- * Sin verificación de quién organiza —la app no tiene sesión de usuario—, así
- * que quedan visibles para cualquiera que abra el detalle, igual que el resto
- * de la vista.
- *
- * La confirmación de borrado es en línea y no un modal, mismo patrón que
- * `AccionesFila` en `AsistentesTable`: el evento que se va a eliminar sigue
- * delante mientras se decide.
+ * Editar y eliminar el evento. Quedan visibles para cualquiera porque la app
+ * no tiene sesion de usuario. La confirmacion de borrado es en linea.
  *
  * @param {{ evento: import('@/types/event').Event }} props
  */

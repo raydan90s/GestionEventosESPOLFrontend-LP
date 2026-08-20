@@ -1,18 +1,7 @@
 /**
- * Color de cada categoría de evento.
- *
- * Las categorías **las define la base de datos** y se leen de `/api/categorias`
- * (ver `@services/categoriasService`): aquí no hay ninguna lista de categorías.
- * Lo único que vive en el frontend es de qué color se pinta cada una, porque la
- * tabla `categorias` no guarda color — es una decisión de diseño, no un dato.
- *
- * El emparejamiento es por palabra clave y no por id, para que siga funcionando
- * si alguien renombra «Deportes» a «Deportes y recreación» o si los ids cambian
- * al recargar el seed. Una categoría nueva que no reconozcamos se pinta con el
- * color de reserva en vez de romper la vista.
- *
- * Los valores son variables CSS de `@style/tokens.css`; nunca un hex. El chip
- * las consume con la clase `.chip-cat` (ver PALETA.md §3).
+ * Color de cada categoria, lo unico que el frontend anade a lo que da la API.
+ * Empareja por palabra clave y no por id; los valores salen de `tokens.css`
+ * (PALETA.md §3).
  */
 
 /** @type {readonly { palabra: string, color: string }[]} */
@@ -26,15 +15,12 @@ const COLOR_POR_PALABRA = Object.freeze([
   { palabra: 'emprendimiento', color: 'var(--cat-emprendimiento)' },
 ])
 
-/** Color de una categoría que la paleta todavía no contempla. */
+/** Color de una categoria que la paleta todavia no contempla. */
 export const COLOR_CATEGORIA_RESERVA = 'var(--cat-otra)'
 
 /**
- * Minúsculas y sin tildes, para que el emparejamiento no dependa del acento.
- *
- * Se exporta porque el buscador de categorías del catálogo necesita comparar
- * igual que se comparan aquí: escribir «deportes» tiene que encontrar
- * «Deportes» y «música», «Musica».
+ * Minusculas y sin tildes. Se exporta porque el buscador de categorias del
+ * catalogo tiene que comparar igual.
  */
 export const normalizar = (texto) =>
   String(texto ?? '')
@@ -43,7 +29,7 @@ export const normalizar = (texto) =>
     .replace(/[\u0300-\u036f]/g, '')
 
 /**
- * Variable CSS del color que corresponde al nombre de una categoría.
+ * Variable CSS del color que corresponde al nombre de una categoria.
  * @param {string} nombre Nombre tal como lo devuelve la API.
  * @returns {string}
  */

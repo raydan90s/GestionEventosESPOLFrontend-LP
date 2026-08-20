@@ -3,11 +3,8 @@ import { getCategorias } from '@services/categoriasService'
 import { mensajeDeError } from '@services/apiErrors'
 
 /**
- * Categorías preestablecidas, leídas de la API.
- *
- * Se cargan una sola vez: son datos de catálogo que no cambian durante una
- * sesión. Si fallan, la vista sigue usable —el catálogo se puede ver sin
- * filtros— así que el error se expone pero no bloquea.
+ * Categorias preestablecidas, leidas de la API. Se cargan una sola vez.
+ * Si fallan, el error se expone pero no bloquea: el catalogo sigue usable.
  */
 export function useCategorias() {
   const [categorias, setCategorias] = useState(

@@ -6,7 +6,7 @@ import { ThemeToggle } from '@components/ThemeToggle'
 import { CATALOGO_PARAMS, ROUTES } from '@constants/routes'
 import { cn } from '@utils/cn'
 
-/** Link de navegación: subrayado azul cuando está activo, como en la maqueta. */
+/** Link de navegacion: subrayado azul cuando esta activo, como en la maqueta. */
 const linkClass = ({ isActive }) =>
   cn(
     'border-b-2 pb-0.5 text-sm transition-colors',
@@ -16,13 +16,9 @@ const linkClass = ({ isActive }) =>
   )
 
 /**
- * Barra superior institucional.
- *
- * Azul: nunca ámbar, que está reservado a inscribirse (PALETA.md §1).
- *
- * El buscador vive aquí porque así lo pide la maqueta, pero el listado que
- * filtra está en el catálogo. Para no duplicar estado, el texto se guarda en
- * la query string: la navbar la escribe y el catálogo la lee.
+ * Barra superior institucional. Azul, nunca ambar (PALETA.md §1).
+ * El buscador esta aqui y el listado en el catalogo: el texto se comparte por
+ * la query string.
  */
 export function Navbar() {
   const navegar = useNavigate()
@@ -32,15 +28,12 @@ export function Navbar() {
   const enCatalogo = pathname === ROUTES.CATALOGO
   const busquedaUrl = params.get(CATALOGO_PARAMS.Q) ?? ''
 
-  /*
-   * En el catálogo el campo lo gobierna la URL, sin copia local: así «Limpiar
-   * filtros» vacía el input sin tener que sincronizar nada. Fuera del catálogo
-   * no hay URL que gobernar todavía, y el texto se guarda hasta que se envía.
-   */
+  // En el catalogo el campo lo gobierna la URL, sin copia local; fuera del
+  // catalogo el texto se guarda hasta que se envia.
   const [borrador, setBorrador] = useState('')
   const texto = enCatalogo ? busquedaUrl : borrador
 
-  /** Ruta del catálogo con la búsqueda aplicada, conservando la categoría. */
+  /** Ruta del catalogo con la busqueda aplicada, conservando la categoria. */
   const rutaConBusqueda = (valor) => {
     const siguientes = new URLSearchParams(enCatalogo ? params : undefined)
 
@@ -52,13 +45,13 @@ export function Navbar() {
   }
 
   const escribir = (valor) => {
-    // Filtrado en vivo sólo donde hay listado; `replace` para no llenar el
+    // Filtrado en vivo solo donde hay listado; `replace` para no llenar el
     // historial con una entrada por cada tecla.
     if (enCatalogo) navegar(rutaConBusqueda(valor), { replace: true })
     else setBorrador(valor)
   }
 
-  // Desde otra página, buscar significa ir al catálogo con el filtro puesto.
+  // Desde otra pagina, buscar significa ir al catalogo con el filtro puesto.
   const buscar = (envio) => {
     envio.preventDefault()
     if (enCatalogo) return
@@ -79,9 +72,8 @@ export function Navbar() {
           EventosESPOL
         </NavLink>
 
-        {/* La navegación va pegada a la marca, como en la maqueta. Sólo se
-            listan rutas que existen: un enlace roto se nota más que uno de
-            menos (mismo criterio que el footer). */}
+        {/* Pegada a la marca, como en la maqueta. Solo se listan rutas que
+            existen, mismo criterio que el footer. */}
         <NavLink to={ROUTES.CATALOGO} end className={linkClass}>
           Explorar
         </NavLink>

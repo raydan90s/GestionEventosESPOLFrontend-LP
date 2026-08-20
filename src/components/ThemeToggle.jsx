@@ -1,7 +1,7 @@
 import { MoonIcon, SunIcon } from '@components/icons'
 import { useTheme } from '@hooks/useTheme'
 
-/** Alterna claro/oscuro. Persiste en localStorage vía ThemeProvider. */
+/** Alterna claro/oscuro. Persiste en localStorage via ThemeProvider. */
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
   const isDark = theme === 'dark'

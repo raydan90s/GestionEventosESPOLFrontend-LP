@@ -2,15 +2,10 @@ import { FormField } from '@components/FormField'
 import { useInscripcion } from '@hooks/useInscripcion'
 
 /**
- * Formulario de inscripción a un evento (RF "Registrar inscripción", Diego Parrales).
+ * Formulario de inscripcion a un evento (RF "Registrar inscripcion", Diego Parrales).
  *
- * El cupo lo descuenta el servidor dentro de una transacción; aquí nunca se
- * decide si hay espacio. `cuposDisponibles` sólo sirve para adelantar el estado
- * «sin cupos» cuando la vista ya conoce el aforo: si llega `undefined`, el
- * formulario se muestra igual y es el 409 del backend el que avisa. Así el
- * componente no depende de que el detalle del evento ya esté cargado.
- *
- * Regla de la paleta: el botón ámbar es el único elemento de acento del bloque.
+ * El cupo lo descuenta el servidor. `cuposDisponibles` solo adelanta el estado
+ * "sin cupos"; si llega `undefined`, avisa el 409 del backend.
  *
  * @param {{
  *   eventoId: string | number,
@@ -31,12 +26,8 @@ export function InscripcionForm({ eventoId, cuposDisponibles, onInscrito }) {
           Inscripción confirmada
         </h2>
 
-        {/*
-          Se dice sólo lo que de verdad ocurrió: el registro quedó guardado. No se
-          promete ningún correo de confirmación, porque el envío automatizado de
-          correos está fuera del alcance de la propuesta y el backend no manda
-          ninguno. El correo se repite como referencia de lo que se guardó.
-        */}
+        {/* No se promete correo de confirmacion: el backend no manda ninguno.
+            El correo se repite solo como referencia de lo guardado. */}
         <p className="text-sm text-fg">
           Guardamos tu inscripción a <strong>{registro.eventoTitulo}</strong> a nombre de{' '}
           {registro.nombre} ({registro.correo}).
@@ -138,7 +129,7 @@ export function InscripcionForm({ eventoId, cuposDisponibles, onInscrito }) {
           />
         </div>
 
-        {/* Ámbar: única acción de acento del formulario. Bold, según PALETA.md §4. */}
+        {/* Ambar: unica accion de acento del formulario. Bold, segun PALETA.md §4. */}
         <button
           type="submit"
           disabled={sinCupos || enviando}

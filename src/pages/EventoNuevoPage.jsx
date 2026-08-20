@@ -5,23 +5,18 @@ import { ROUTES, eventoDetalle } from '@constants/routes'
 import { createEvent, uploadEventImage } from '@services/eventsService'
 
 /**
- * Creación de un evento (RF "Crear evento", Juliana Burgos).
+ * Creacion de un evento (RF "Crear evento", Juliana Burgos).
  *
- * Se abre como **panel lateral** encima de la vista en la que estabas, no como
- * una página aparte: crear un evento es una tarea, y sacarte del catálogo para
- * hacerla te obliga a volver luego. Sigue teniendo ruta propia
- * (`/eventos/nuevo`), y `App` decide qué pintar detrás — ver `CrearEventoLink`.
- *
- * El formulario en sí vive en `@components/EventoForm`, compartido con
- * `EventoEditarPage`: aquí sólo se decide el texto y qué pasa al guardar.
+ * Se abre como panel lateral encima de la vista actual, con ruta propia
+ * (`/eventos/nuevo`). El formulario vive en `@components/EventoForm`.
  */
 export default function EventoNuevoPage() {
   const navegar = useNavigate()
   const location = useLocation()
 
   /**
-   * Cierra el panel volviendo a lo que había detrás. Si se entró escribiendo la
-   * URL no hay nada atrás a lo que volver, así que se va al catálogo.
+   * Cierra el panel volviendo a lo que habia detras. Si se entro escribiendo la
+   * URL no hay nada atras a lo que volver, asi que se va al catalogo.
    */
   const cerrar = () => {
     if (location.state?.background) navegar(-1)
@@ -32,7 +27,7 @@ export default function EventoNuevoPage() {
     const creado = await createEvent(valores)
 
     // El evento ya existe aunque la imagen falle: no se muestra un error de
-    // creación que sería mentira, sino un aviso aparte en el detalle.
+    // creacion que seria mentira, sino un aviso aparte en el detalle.
     let imagenFallida = false
     if (archivoImagen) {
       try {
@@ -42,8 +37,8 @@ export default function EventoNuevoPage() {
       }
     }
 
-    // `replace`: el panel deja de existir, así que «atrás» debe llevar a la
-    // vista desde la que se abrió y no reabrir un formulario ya enviado.
+    // `replace`: el panel deja de existir, asi que "atras" debe llevar a la
+    // vista desde la que se abrio y no reabrir un formulario ya enviado.
     navegar(eventoDetalle(creado.id), {
       replace: true,
       state: imagenFallida

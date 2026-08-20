@@ -3,17 +3,10 @@ import { ChevronDownIcon } from '@components/icons'
 import { cn } from '@utils/cn'
 
 /**
- * Botón que despliega un panel flotante.
+ * Boton que despliega un panel flotante.
  *
- * Lo usan los filtros del catálogo (categoría y fechas) para que la barra no
- * crezca con el catálogo: cada filtro ocupa un botón, tenga tres opciones o
- * cincuenta. No es un `<dialog>` como `@components/SidePanel` porque no es
- * modal —se puede seguir leyendo la rejilla detrás— así que el cierre por
- * Escape y por clic fuera se resuelven aquí.
- *
- * `children` es una función que recibe `cerrar`: quien lo usa decide si elegir
- * una opción cierra el panel (categoría) o lo deja abierto para seguir
- * ajustando (rango de fechas).
+ * No es modal como `@components/SidePanel`, asi que el cierre por Escape y por
+ * clic fuera se resuelve aqui. `children` recibe `cerrar` y decide si cerrarlo.
  *
  * @param {{
  *   etiqueta: string,
@@ -41,12 +34,8 @@ export function Desplegable({
 
   const cerrar = () => setAbierto(false)
 
-  /*
-   * Clic fuera y Escape. Se escucha en `pointerdown` y no en `click` para que el
-   * panel se cierre al empezar el gesto, antes de que el elemento de debajo se
-   * mueva bajo el cursor. Sólo mientras está abierto: cerrado no hay nada que
-   * vigilar y los oyentes globales salen del documento.
-   */
+  // Clic fuera y Escape. Se escucha en `pointerdown` y no en `click` para que
+  // el panel se cierre al empezar el gesto, no al soltarlo.
   useEffect(() => {
     if (!abierto) return undefined
 
@@ -58,8 +47,8 @@ export function Desplegable({
       if (evento.key !== 'Escape') return
 
       setAbierto(false)
-      // El foco vuelve al botón: si se cerró con el teclado, el tabulador
-      // continúa desde donde estaba y no desde el principio de la página.
+      // El foco vuelve al boton: si se cerro con el teclado, el tabulador
+      // continua desde donde estaba y no desde el principio de la pagina.
       disparador.current?.focus()
     }
 
@@ -82,7 +71,7 @@ export function Desplegable({
         aria-controls={panelId}
         className={cn(
           'btn btn-neutral gap-1.5 py-2',
-          // Con filtro puesto el botón se queda marcado aunque el panel esté
+          // Con filtro puesto el boton se queda marcado aunque el panel este
           // plegado: el filtro sigue actuando y tiene que verse.
           activo && 'border-secondary text-secondary',
           className,
@@ -90,7 +79,7 @@ export function Desplegable({
       >
         {Icono && <Icono className="h-4 w-4" />}
         <span>{etiqueta}</span>
-        {/* El valor elegido va dentro del botón para no gastar una fila extra. */}
+        {/* El valor elegido va dentro del boton para no gastar una fila extra. */}
         {valor && <span className="font-semibold">{valor}</span>}
         <ChevronDownIcon
           className={cn('h-4 w-4 transition-transform', abierto && 'rotate-180')}

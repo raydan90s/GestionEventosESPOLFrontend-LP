@@ -3,11 +3,8 @@ import { mensajeDeError } from '@services/apiErrors'
 import { getEvent } from '@services/eventsService'
 
 /**
- * Detalle de un evento.
- *
- * `recargar` lo usa la vista después de una inscripción, para que el aforo y la
- * barra reflejen el cupo que acaba de descontar el servidor. El cliente nunca
- * resta cupos por su cuenta: vuelve a preguntar.
+ * Detalle de un evento. `recargar` lo usa la vista tras una inscripcion: el
+ * cliente nunca resta cupos por su cuenta, vuelve a preguntar.
  *
  * @param {string | number | undefined} id
  */

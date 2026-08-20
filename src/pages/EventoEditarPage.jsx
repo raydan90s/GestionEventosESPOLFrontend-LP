@@ -7,16 +7,8 @@ import { updateEvent, uploadEventImage } from '@services/eventsService'
 import { toDatetimeLocal } from '@utils/apiDate'
 
 /**
- * Edición de un evento existente (Tarea 5 — "sólo si da el tiempo").
- *
- * Reutiliza el mismo panel lateral y el mismo `EventoForm` que «Crear
- * evento»: el formulario es idéntico, sólo cambian los valores de partida
- * (los del evento cargado) y qué pasa al guardar (`updateEvent` en vez de
- * `createEvent`, y volver al detalle en vez de ir a uno nuevo).
- *
- * `id` llega por prop, no por `useParams`: este panel se pinta fuera de
- * `<Routes>` (ver `App`, igual que `EventoNuevoPage`), así que no hay una
- * ruta activa de la que leer el parámetro.
+ * Edicion de un evento. Reutiliza el `EventoForm` de "Crear evento"; `id` llega
+ * por prop porque el panel se pinta fuera de `<Routes>` (ver `App`).
  *
  * @param {{ id: string }} props
  */
@@ -42,9 +34,8 @@ export default function EventoEditarPage({ id }) {
       }
     }
 
-    // `replace`: igual que al crear, «atrás» no debe reabrir un panel ya enviado.
-    // `eventoActualizado` en el state: la página de detalle no se desmonta en
-    // este viaje de ida y vuelta, así que necesita el aviso para recargar.
+    // `replace`: "atras" no debe reabrir un panel ya enviado. El aviso va en el
+    // state porque la pagina de detalle no se desmonta en este viaje.
     navegar(eventoDetalle(id), {
       replace: true,
       state: {

@@ -8,14 +8,11 @@ const DEBOUNCE_MS = 300
 /**
  * Listado de asistentes de un evento (RF "Ver asistentes").
  *
- * La búsqueda la resuelve el backend (`?q=`), no el cliente: el listado puede
- * ser largo y el filtro debe aplicarse sobre todos los inscritos, no sobre los
- * que ya se descargaron. Por eso se espera a que el organizador deje de
- * escribir y se cancela la petición anterior con `AbortController`, de modo que
- * una respuesta lenta no pise a otra más reciente.
+ * La busqueda la resuelve el backend (`?q=`) sobre todos los inscritos, no solo
+ * los descargados. Se cancela la peticion anterior con `AbortController`.
  *
  * @param {string | number} eventoId
- * @param {string} [busqueda] Nombre, matrícula o correo.
+ * @param {string} [busqueda] Nombre, matricula o correo.
  */
 export function useAsistentes(eventoId, busqueda = '') {
   const [evento, setEvento] = useState(
@@ -28,25 +25,19 @@ export function useAsistentes(eventoId, busqueda = '') {
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState(/** @type {string | null} */ (null))
 
-  // Id de la inscripción que se está dando de baja, para bloquear su fila y que
-  // no se pueda pulsar dos veces. Es uno solo: se cancela de una en una.
+  // Inscripcion que se esta dando de baja, para bloquear su fila.
   const [cancelandoId, setCancelandoId] = useState(/** @type {number | null} */ (null))
   const [errorCancelar, setErrorCancelar] = useState(/** @type {string | null} */ (null))
 
-  // Cambiarlo fuerza una recarga sin tocar los parámetros de la consulta.
+  // Cambiarlo fuerza una recarga sin tocar los parametros de la consulta.
   const [contador, setContador] = useState(0)
   const recargar = useCallback(() => setContador((n) => n + 1), [])
 
-  // La primera carga muestra el esqueleto; las búsquedas posteriores dejan la
-  // tabla anterior visible para que la vista no parpadee en cada tecla.
+  // Solo la primera carga muestra el esqueleto; al buscar se deja la tabla.
   const primeraCarga = useRef(true)
 
-  /*
-   * Sin id no hay nada que pedir. `cargando` se apaga por cálculo y no con un
-   * `setCargando(false)` en la salida temprana del efecto: si el estado se
-   * quedara en `true` —su valor inicial— la tabla enseñaría los esqueletos para
-   * siempre. Hoy la ruta siempre trae id, así que esto es un seguro.
-   */
+  // Sin id no hay nada que pedir. `cargando` se apaga por calculo: si se quedara
+  // en `true` la tabla ensenaria los esqueletos para siempre.
   const sinId = eventoId === undefined || eventoId === null || eventoId === ''
 
   useEffect(() => {
@@ -90,12 +81,8 @@ export function useAsistentes(eventoId, busqueda = '') {
   }, [busqueda, contador, eventoId, sinId])
 
   /**
-   * Da de baja una inscripción y devuelve el cupo al evento.
-   *
-   * Al terminar se recarga en vez de quitar la fila en memoria: el `DELETE`
-   * también cambia el aforo, y el resumen del encabezado sale de la misma
-   * respuesta que el listado. Descontarlo aquí sería volver a decidir cupos en
-   * el cliente, que es justo lo que este módulo no hace.
+   * Da de baja una inscripcion y devuelve el cupo al evento. Recarga en vez de
+   * quitar la fila: el `DELETE` tambien cambia el aforo del encabezado.
    *
    * @param {number} inscripcionId
    */

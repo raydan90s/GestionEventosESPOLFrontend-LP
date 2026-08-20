@@ -3,11 +3,8 @@ import { CrearEventoLink } from '@components/CrearEventoLink'
 import { ROUTES } from '@constants/routes'
 
 /**
- * Redes institucionales de la ESPOL.
- *
- * Están aquí y no incrustadas en el JSX para que corregir una cuenta sea tocar
- * una línea. Son enlaces a sitios de terceros: conviene confirmarlos con
- * Comunicación Institucional antes de publicar.
+ * Redes institucionales de la ESPOL. Son enlaces a sitios de terceros:
+ * conviene confirmarlos con Comunicacion Institucional antes de publicar.
  */
 const REDES = Object.freeze([
   { nombre: 'Facebook', url: 'https://www.facebook.com/ESPOL' },
@@ -16,12 +13,8 @@ const REDES = Object.freeze([
 ])
 
 /**
- * Banda institucional de cierre: tres columnas —sobre la plataforma, enlaces y
- * contacto— y una línea inferior con el aviso de derechos.
- *
- * La maqueta lleva también Privacidad, Términos de Uso y Ayuda ESPOL, que
- * todavía no tienen página. Aquí sólo se listan los destinos que existen: un
- * enlace roto se nota más que uno de menos.
+ * Banda institucional de cierre: tres columnas y el aviso de derechos.
+ * Solo se listan los destinos que ya tienen pagina.
  */
 export function Footer() {
   return (

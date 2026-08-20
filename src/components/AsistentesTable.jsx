@@ -5,13 +5,8 @@ import { formatDateTime } from '@utils/formatDate'
 /**
  * Tabla de asistentes de un evento (RF "Ver asistentes", Diego Parrales).
  *
- * Herramienta de trabajo para el control logístico: sin colores de acento ni
- * `cat-*`, que son de la tarjeta de catálogo. La única acción, dar de baja a
- * alguien, va en `.btn-neutral`; ni ámbar (reservado a inscribirse) ni rojo de
- * fondo (reservado a errores y a «sin cupos»).
- *
- * La columna de acciones sólo aparece si se pasa `onCancelar`, para que la tabla
- * siga sirviendo como listado de sólo lectura donde no toque.
+ * Sin colores de acento: es una herramienta de trabajo, no una tarjeta. La
+ * columna de acciones solo aparece si se pasa `onCancelar`.
  *
  * @param {{
  *   asistentes: import('@/types/event').Attendee[],
@@ -28,11 +23,8 @@ export function AsistentesTable({
   onCancelar,
   cancelandoId = null,
 }) {
-  /*
-   * Fila que está pidiendo confirmación. Va aquí y no en la página porque es
-   * estado de interacción, no de datos: dar de baja libera un cupo y no se puede
-   * deshacer, así que nunca se borra al primer clic.
-   */
+  // Fila que pide confirmacion: dar de baja libera un cupo y no se puede
+  // deshacer, asi que nunca se borra al primer clic.
   const [confirmandoId, setConfirmandoId] = useState(/** @type {number | null} */ (null))
 
   if (cargando) {
@@ -56,7 +48,7 @@ export function AsistentesTable({
   }
 
   return (
-    // La tabla desborda antes que la página: el scroll horizontal vive aquí.
+    // La tabla desborda antes que la pagina: el scroll horizontal vive aqui.
     <div className="surface overflow-x-auto">
       <table
         className={`w-full border-collapse text-left text-sm ${
@@ -107,7 +99,7 @@ export function AsistentesTable({
                     confirmando={confirmandoId === asistente.id}
                     cancelando={cancelandoId === asistente.id}
                     // Con una baja en curso se bloquea toda la columna: al
-                    // terminar se recarga el listado entero y los índices bailan.
+                    // terminar se recarga el listado entero y los indices bailan.
                     bloqueado={cancelandoId !== null}
                     onPedirConfirmacion={() => setConfirmandoId(asistente.id)}
                     onDesistir={() => setConfirmandoId(null)}
@@ -127,12 +119,8 @@ export function AsistentesTable({
 }
 
 /**
- * Celda de acciones de una fila: un botón que, al pulsarlo, se convierte en la
- * pregunta de confirmación en el mismo sitio.
- *
- * La confirmación es en línea y no un modal a propósito: el organizador está
- * dando de baja a *esta* persona y la fila con su nombre sigue delante mientras
- * decide, que es justo el contexto que un diálogo aparte le quitaría.
+ * Celda de acciones: el boton se convierte en la pregunta de confirmacion en
+ * el mismo sitio, para que la fila siga a la vista mientras se decide.
  *
  * @param {{
  *   asistente: import('@/types/event').Attendee,

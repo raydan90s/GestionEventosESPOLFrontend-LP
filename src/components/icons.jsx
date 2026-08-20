@@ -1,12 +1,6 @@
 /**
- * Iconos de la interfaz, en SVG inline.
- *
- * No hay librería de iconos: son unos trazos sueltos y una dependencia menos que
- * cargar. Todos heredan el color con `currentColor` y el tamaño con `em`, así
- * que se tiñen y se escalan con las clases del texto que los acompaña.
- *
- * Son decorativos: la etiqueta siempre está en el texto de al lado, por eso
- * van con `aria-hidden`.
+ * Iconos de la interfaz, en SVG inline: no hay libreria. Heredan el color con
+ * `currentColor` y el tamano con `em`; son decorativos, van con `aria-hidden`.
  */
 
 /** @param {{ className?: string }} props */

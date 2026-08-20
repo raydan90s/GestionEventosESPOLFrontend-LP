@@ -4,11 +4,8 @@ const CON_HORA = /\d{2}:\d{2}/
 /**
  * Normaliza a ISO 8601 las marcas de tiempo de PostgreSQL.
  *
- * Llegan como `2026-08-17 14:38:18.355104+00`: espacio en vez de `T` y desfase
- * de dos dígitos. El estándar de JavaScript sólo garantiza el parseo del
- * formato ISO —Chrome es permisivo, Safari no—, así que se corrige en la capa
- * de servicios, junto al resto de la traducción de la API. Si aun así no se
- * puede parsear, se devuelve el texto original y `formatDate` decide qué mostrar.
+ * Llegan como `2026-08-17 14:38:18.355104+00`, que Safari no parsea. Si aun asi
+ * no se puede parsear, devuelve el texto original.
  *
  * @param {unknown} value
  * @returns {string}
@@ -26,27 +23,22 @@ export function toIso(value) {
 }
 
 /**
- * Convierte el valor de un `<input type="date">` (`YYYY-MM-DD`) en el instante
- * absoluto en que **empieza** ese día en la zona del usuario, listo para viajar
- * como filtro `fecha_desde`.
+ * Instante en que empieza el dia del `<input type="date">`, en la zona del
+ * usuario: mandar la fecha suelta la dejaria en la zona del servidor.
  *
- * Se manda el instante y no la fecha suelta porque el backend interpretaría
- * `2026-09-01` en la zona del servidor, no en la de quien filtra.
- *
- * @param {string} value Fecha en formato `YYYY-MM-DD`; vacío si no hay filtro.
- * @returns {string} ISO 8601, o cadena vacía si no hay fecha válida.
+ * @param {string} value Fecha en formato `YYYY-MM-DD`; vacio si no hay filtro.
+ * @returns {string} ISO 8601, o cadena vacia si no hay fecha valida.
  */
 export function inicioDelDia(value) {
   return instante(value, 'T00:00:00.000')
 }
 
 /**
- * Igual que `inicioDelDia`, pero con el último milisegundo del día: un filtro
- * `hasta = 2026-09-01` tiene que incluir los eventos de esa misma tarde, y
- * `2026-09-01T00:00` los dejaría todos fuera.
+ * Igual que `inicioDelDia` pero al final del dia: `hasta = 2026-09-01` tiene
+ * que incluir los eventos de esa misma tarde.
  *
- * @param {string} value Fecha en formato `YYYY-MM-DD`; vacío si no hay filtro.
- * @returns {string} ISO 8601, o cadena vacía si no hay fecha válida.
+ * @param {string} value Fecha en formato `YYYY-MM-DD`; vacio si no hay filtro.
+ * @returns {string} ISO 8601, o cadena vacia si no hay fecha valida.
  */
 export function finDelDia(value) {
   return instante(value, 'T23:59:59.999')
@@ -72,7 +64,7 @@ function instante(value, hora) {
  * (`YYYY-MM-DDTHH:mm`), en hora local.
  *
  * @param {string | Date} value
- * @returns {string} Cadena vacía si la fecha no es válida.
+ * @returns {string} Cadena vacia si la fecha no es valida.
  */
 export function toDatetimeLocal(value) {
   const fecha = value instanceof Date ? value : new Date(value)

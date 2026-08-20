@@ -5,12 +5,8 @@ import { cn } from '@utils/cn'
 import { formatDateTime } from '@utils/formatDate'
 
 /**
- * Hilo de comentarios de un evento
- * (RF "Ver comentarios" y "Escribir comentario", Eimmy Ochoa).
- *
- * Se pinta sobre `card-muted` y sin bordes de color: nada de `cat-*` ni de
- * ámbar aquí dentro, para que el hilo no compita con la inscripción
- * (ver PALETA.md §5).
+ * Hilo de comentarios (RF "Ver comentarios" y "Escribir comentario", Eimmy Ochoa).
+ * Sin colores de acento, para que no compita con la inscripcion (PALETA.md §5).
  *
  * @param {{ eventoId: string | number }} props
  */
@@ -98,7 +94,7 @@ export function ComentariosSection({ eventoId }) {
           </p>
         )}
 
-        {/* Azul, no ámbar: el ámbar es sólo para inscribirse. */}
+        {/* Azul, no ambar: el ambar es solo para inscribirse. */}
         <button type="submit" disabled={enviando} className="btn btn-primary">
           {enviando ? 'Publicando…' : 'Publicar comentario'}
         </button>

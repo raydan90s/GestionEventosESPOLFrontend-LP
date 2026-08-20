@@ -3,14 +3,8 @@ import { http } from '@services/http'
 import { toIso } from '@utils/apiDate'
 
 /**
- * Inscripciones y asistentes.
- *
- * RF "Registrar inscripción" y "Ver asistentes" (Diego Parrales).
- *
- * La API PHP responde en snake_case (`nombre_estudiante`, `cupos_disponibles`,
- * `fecha_inscripcion`) y el frontend trabaja en camelCase. Toda la traducción
- * vive en este módulo: los hooks y los componentes nunca ven una clave de la
- * base de datos.
+ * Inscripciones y asistentes. RF "Registrar inscripcion" y "Ver asistentes"
+ * (Diego Parrales). Traduce el snake_case de la API a camelCase.
  */
 
 /** Nombre que espera la API para cada campo del formulario. */
@@ -70,11 +64,10 @@ const toRegistration = (row) => ({
 })
 
 /**
- * Registra una inscripción en un evento.
+ * Registra una inscripcion en un evento.
  *
- * El aforo se valida en el servidor dentro de una transacción con bloqueo de
- * fila, así que dos personas que peleen por el último cupo no pueden ganarlo
- * las dos: la segunda recibe un 409. Nunca se descuenta el cupo en el cliente.
+ * El aforo lo valida el servidor con bloqueo de fila: quien llega segundo al
+ * ultimo cupo recibe un 409. El cliente nunca descuenta.
  *
  * @param {string | number} eventoId
  * @param {{ nombre: string, correo: string, matricula?: string, telefono?: string }} datos
@@ -85,8 +78,7 @@ export async function registrarInscripcion(eventoId, datos) {
 
   for (const [campoForm, campoApi] of Object.entries(CAMPO_API)) {
     const valor = String(datos[campoForm] ?? '').trim()
-    // Los opcionales vacíos no se envían: el validador del backend los ignora
-    // igual, pero así el payload refleja lo que el usuario realmente escribió.
+    // Los opcionales vacios no se envian: el payload refleja lo escrito.
     if (valor !== '') payload[campoApi] = valor
   }
 
@@ -100,7 +92,7 @@ export async function registrarInscripcion(eventoId, datos) {
  *
  * @param {string | number} eventoId
  * @param {{ q?: string, signal?: AbortSignal }} [opciones] `q` busca por nombre,
- *   matrícula o correo (lo resuelve el backend con ILIKE).
+ *   matricula o correo (lo resuelve el backend con ILIKE).
  * @returns {Promise<import('@/types/event').AttendeeList>}
  */
 export async function getAsistentes(eventoId, { q, signal } = {}) {
@@ -114,28 +106,25 @@ export async function getAsistentes(eventoId, { q, signal } = {}) {
 }
 
 /**
- * Cancela una inscripción y devuelve el cupo al evento.
- *
- * El cupo lo repone el backend, igual que lo descuenta: aquí no se toca ningún
- * contador. Por eso la vista recarga el listado después en lugar de quitar la
- * fila en memoria (ver `useAsistentes`).
+ * Cancela una inscripcion y devuelve el cupo. Lo repone el backend, por eso la
+ * vista recarga en vez de quitar la fila (ver `useAsistentes`).
  *
  * @param {string | number} inscripcionId
  */
 export const cancelarInscripcion = (inscripcionId) => http.del(`/inscripciones/${inscripcionId}`)
 
 /**
- * Errores de validación del formulario de inscripción, con las claves del
+ * Errores de validacion del formulario de inscripcion, con las claves del
  * formulario (`nombre`) y no las de la API (`nombre_estudiante`).
  *
  * @param {unknown} error
- * @returns {Record<string, string>} Vacío si el error no es de validación.
+ * @returns {Record<string, string>} Vacio si el error no es de validacion.
  */
 export const erroresDeCampo = (error) => erroresDeValidacion(error, CAMPO_FORM)
 
 /**
- * `true` cuando el registro falló porque el evento ya no admite la inscripción:
- * sin cupos, correo repetido, evento cancelado o evento ya realizado.
+ * `true` cuando el evento ya no admite la inscripcion: sin cupos, correo
+ * repetido, cancelado o ya realizado.
  *
  * @param {unknown} error
  */

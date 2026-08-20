@@ -11,7 +11,7 @@ const TIME_FORMAT = new Intl.DateTimeFormat('es-EC', {
 })
 
 /**
- * Fecha legible: "mié, 12 ago 2026".
+ * Fecha legible: "mie, 12 ago 2026".
  * @param {string | Date} value
  * @returns {string}
  */

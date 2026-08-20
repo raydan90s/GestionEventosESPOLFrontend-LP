@@ -2,12 +2,8 @@ import { http } from '@services/http'
 import { colorDeCategoria } from '@constants/categories'
 
 /**
- * Categorías preestablecidas.
- *
- * La lista la manda la base de datos: el frontend no tiene ninguna categoría
- * escrita a mano. Lo único que se añade aquí es el color, que la tabla
- * `categorias` no guarda porque es una decisión de diseño
- * (ver `@constants/categories`).
+ * Categorias preestablecidas. La lista la manda la base; lo unico que se anade
+ * aqui es el color, que la tabla no guarda (ver `@constants/categories`).
  */
 
 /**
@@ -27,7 +23,7 @@ const toCategory = (row) => {
 }
 
 /**
- * Todas las categorías, con su total de eventos activos.
+ * Todas las categorias, con su total de eventos activos.
  * @param {{ signal?: AbortSignal }} [opciones]
  * @returns {Promise<import('@/types/event').Category[]>}
  */

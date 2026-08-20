@@ -9,7 +9,7 @@ import { cn } from '@utils/cn'
 /** Tipos de imagen aceptados; el backend los revalida por contenido, no por nombre. */
 const TIPOS_IMAGEN = 'image/jpeg,image/png,image/webp'
 
-/** Formulario vacío, punto de partida al crear. */
+/** Formulario vacio, punto de partida al crear. */
 const EVENTO_VACIO = Object.freeze({
   titulo: '',
   descripcion: '',
@@ -21,20 +21,10 @@ const EVENTO_VACIO = Object.freeze({
 })
 
 /**
- * Formulario de evento, compartido entre «Crear evento» y «Editar evento».
+ * Formulario de evento, compartido entre "Crear evento" y "Editar evento".
  *
- * Los campos, la validación en el submit y la traducción de errores 422 son
- * exactamente iguales en los dos casos — sólo cambian los valores de partida,
- * el texto del botón y qué hace `onGuardar` con lo que se envía (crear uno
- * nuevo o actualizar el existente, y a dónde navegar después). Duplicar este
- * formulario para editar lo habría desincronizado del de crear en una semana.
- *
- * No incluye el `SidePanel`: cada página decide su propio título y lo envuelve
- * ella misma, igual que hacía `EventoNuevoPage` antes de este refactor.
- *
- * La imagen viaja aparte: `onGuardar` recibe también el archivo elegido (o
- * `null`) y decide qué hacer con él, porque subirla es una petición distinta
- * a crear o actualizar el evento (ver `uploadEventImage`).
+ * No incluye el `SidePanel`: cada pagina pone su propio titulo. La imagen viaja
+ * aparte en `onGuardar`, porque subirla es otra peticion (`uploadEventImage`).
  *
  * @param {{
  *   valoresIniciales?: typeof EVENTO_VACIO,
@@ -66,7 +56,7 @@ export function EventoForm({
   const [archivoImagen, setArchivoImagen] = useState(/** @type {File | null} */ (null))
   const [previsualizacion, setPrevisualizacion] = useState('')
 
-  // El `object URL` de la previsualización es un recurso del navegador: hay
+  // El `object URL` de la previsualizacion es un recurso del navegador: hay
   // que liberarlo al cambiar de archivo o al desmontar, o gotea memoria.
   useEffect(() => {
     return () => {
@@ -83,8 +73,8 @@ export function EventoForm({
     })
   }
 
-  // Lo que se ve en la previsualización: el archivo recién elegido si hay
-  // uno, si no la imagen que ya tenía el evento (al editar).
+  // Lo que se ve en la previsualizacion: el archivo recien elegido si hay
+  // uno, si no la imagen que ya tenia el evento (al editar).
   const vistaPrevia = previsualizacion || (imagenActual ? assetUrl(imagenActual) : '')
 
   /** Actualiza un campo y limpia su error, para que desaparezca al corregirlo. */
@@ -106,9 +96,8 @@ export function EventoForm({
     setError(null)
 
     try {
-      // `onGuardar` hace la llamada a la API y navega al terminar: si no
-      // lanza, este formulario está a punto de desmontarse y no hace falta
-      // apagar `enviando`.
+      // `onGuardar` llama a la API y navega: si no lanza, el formulario esta
+      // a punto de desmontarse y no hace falta apagar `enviando`.
       await onGuardar(valores, archivoImagen)
     } catch (fallo) {
       const porCampo = erroresDeCampo(fallo)
@@ -124,8 +113,8 @@ export function EventoForm({
 
   return (
     <form onSubmit={enviar} noValidate className="flex min-h-0 flex-1 flex-col">
-      {/* `min-h-0` es lo que deja encoger a la zona de campos: sin él crece
-          sin límite y el pie de botones se sale del panel. */}
+      {/* `min-h-0` es lo que deja encoger a la zona de campos: sin el crece
+          sin limite y el pie de botones se sale del panel. */}
       <div className="min-h-0 flex-1 space-y-8 overflow-y-auto px-6 py-6">
         <p className="text-sm text-fg-muted">{textoAyuda}</p>
 
@@ -275,9 +264,8 @@ export function EventoForm({
               <span className="ml-1 font-normal text-fg-subtle">(opcional)</span>
             </label>
 
-            {/* Aspecto fijo para que la previsualización no salte al elegir
-                una foto de otra proporción; mismo tratamiento que la tarjeta
-                del catálogo (EventCard). */}
+            {/* Aspecto fijo para que la previsualizacion no salte al cambiar
+                de foto, igual que en `EventCard`. */}
             {vistaPrevia && (
               <img
                 src={vistaPrevia}
@@ -308,7 +296,7 @@ export function EventoForm({
           Cancelar
         </button>
 
-        {/* Azul: el ámbar está reservado a la acción de inscribirse. */}
+        {/* Azul: el ambar esta reservado a la accion de inscribirse. */}
         <button type="submit" disabled={enviando} className="btn btn-primary">
           {enviando ? textoEnviando : textoBoton}
         </button>
