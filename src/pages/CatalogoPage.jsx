@@ -4,6 +4,7 @@ import { CrearEventoLink } from '@components/CrearEventoLink'
 import { EventCard } from '@components/EventCard'
 import { resolverRango } from '@constants/rangosFecha'
 import { ACTIVO, CATALOGO_PARAMS } from '@constants/routes'
+import { TIEMPO_EVENTO, TIEMPO_POR_DEFECTO, resolverTiempo } from '@constants/tiempoEvento'
 import { useCategorias } from '@hooks/useCategorias'
 import { useEventos } from '@hooks/useEventos'
 
@@ -30,7 +31,13 @@ export default function CatalogoPage() {
     fecha: params.get(CATALOGO_PARAMS.FECHA),
     desde: params.get(CATALOGO_PARAMS.DESDE) ?? '',
     hasta: params.get(CATALOGO_PARAMS.HASTA) ?? '',
-    proximos: params.get(CATALOGO_PARAMS.PROXIMOS) === ACTIVO,
+    /*
+     * Sin `tiempo` en la URL el catálogo lista sólo lo que está por venir: un
+     * evento cuya fecha ya pasó no admite inscripciones, así que mezclarlo con
+     * los demás sólo lleva a intentar apuntarse a algo que el backend rechaza.
+     * El histórico se pide a propósito con `tiempo=pasados`.
+     */
+    tiempo: resolverTiempo(params.get(CATALOGO_PARAMS.TIEMPO)),
     disponibles: params.get(CATALOGO_PARAMS.DISPONIBLES) === ACTIVO,
   }
 
@@ -44,7 +51,7 @@ export default function CatalogoPage() {
   const filtrando =
     filtros.categoriaId !== null ||
     filtros.q.trim() !== '' ||
-    filtros.proximos ||
+    filtros.tiempo !== TIEMPO_POR_DEFECTO ||
     filtros.disponibles ||
     desde !== '' ||
     hasta !== ''
@@ -64,7 +71,8 @@ export default function CatalogoPage() {
     q: filtros.q,
     desde: rangoInvalido ? '' : desde,
     hasta: rangoInvalido ? '' : hasta,
-    soloProximos: filtros.proximos,
+    soloProximos: filtros.tiempo === TIEMPO_EVENTO.PROXIMOS,
+    soloPasados: filtros.tiempo === TIEMPO_EVENTO.PASADOS,
     soloDisponibles: filtros.disponibles,
   })
   // El id de la URL es texto y el de la API número: se comparan como texto.
@@ -158,6 +166,8 @@ export default function CatalogoPage() {
           filtrando={filtrando}
           categoria={categoriaActiva?.nombre}
           conFechas={conFechas}
+          tiempo={filtros.tiempo}
+          onVerPasados={() => filtrar({ [CATALOGO_PARAMS.TIEMPO]: TIEMPO_EVENTO.PASADOS })}
           onLimpiar={limpiar}
         />
       ) : (
@@ -193,7 +203,26 @@ function RejillaCargando() {
  * Dos vacíos distintos: no es lo mismo que el filtro no devuelva nada que
  * que todavía no exista ningún evento publicado.
  */
-function VacioCatalogo({ filtrando, categoria, conFechas, onLimpiar }) {
+function VacioCatalogo({ filtrando, categoria, conFechas, tiempo, onVerPasados, onLimpiar }) {
+  /*
+   * «No hay nada próximo» no es lo mismo que «no hay nada publicado», y el
+   * único filtro puesto es el que trae el catálogo de fábrica: en vez de
+   * ofrecer «limpiar filtros» —que no quitaría ninguno visible— se ofrece la
+   * puerta al histórico, que es lo que queda por mirar.
+   */
+  if (!filtrando && tiempo === TIEMPO_EVENTO.PROXIMOS) {
+    return (
+      <div className="surface space-y-3 bg-card-muted px-4 py-16 text-center">
+        <p className="text-fg-muted">
+          No hay eventos próximos. Los que ya se realizaron siguen en el histórico.
+        </p>
+        <button type="button" onClick={onVerPasados} className="link text-sm">
+          Ver eventos pasados
+        </button>
+      </div>
+    )
+  }
+
   if (filtrando) {
     return (
       <div className="surface space-y-3 bg-card-muted px-4 py-16 text-center">

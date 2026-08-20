@@ -21,8 +21,11 @@ export const CATALOGO_PARAMS = Object.freeze({
   FECHA: 'fecha',
   DESDE: 'desde',
   HASTA: 'hasta',
-  /** Sólo eventos que aún no han ocurrido. */
-  PROXIMOS: 'proximos',
+  /**
+   * Momento del catálogo: `proximos` (por defecto y omitido en la URL),
+   * `pasados` o `todos`; ver `@constants/tiempoEvento`.
+   */
+  TIEMPO: 'tiempo',
   /** Sólo eventos con cupo libre. */
   DISPONIBLES: 'disponibles',
 })

@@ -44,7 +44,8 @@ export const toEvent = (row) => ({
  * `<input type="date">`) y salen como instante ISO: ver `@utils/apiDate`.
  *
  * @param {{ categoriaId?: number|string, q?: string, desde?: string, hasta?: string,
- *           soloProximos?: boolean, soloDisponibles?: boolean, estado?: string }} [filtros]
+ *           soloProximos?: boolean, soloPasados?: boolean, soloDisponibles?: boolean,
+ *           estado?: string }} [filtros]
  * @param {{ signal?: AbortSignal }} [opciones]
  * @returns {Promise<import('@/types/event').Event[]>}
  */
@@ -60,6 +61,9 @@ export async function getEvents(filtros = {}, { signal } = {}) {
       // La API espera cadenas: `false` se descarta en http.get y el filtro
       // simplemente no viaja, que es justo lo que queremos.
       solo_proximos: filtros.soloProximos ? 'true' : undefined,
+      // El histórico lo devuelve el backend (`fecha_evento < NOW()`) y en orden
+      // inverso: de un pasado se mira primero lo más reciente.
+      solo_pasados: filtros.soloPasados ? 'true' : undefined,
       solo_disponibles: filtros.soloDisponibles ? 'true' : undefined,
     },
     { signal },

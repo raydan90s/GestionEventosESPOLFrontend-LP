@@ -5,6 +5,7 @@ import { StatusBadge } from '@components/StatusBadge'
 import { CalendarIcon, PinIcon } from '@components/icons'
 import { EVENT_STATUS, EVENT_STATUS_META } from '@constants/eventStatus'
 import { eventoDetalle } from '@constants/routes'
+import { esPasado } from '@utils/eventoTiempo'
 import { formatDateTime } from '@utils/formatDate'
 
 /**
@@ -32,7 +33,14 @@ export function EventCard({ event, posicion = 0 }) {
   const lleno = event.cuposDisponibles <= 0
   const activo = event.estado === EVENT_STATUS.ACTIVO
   const meta = EVENT_STATUS_META[event.estado]
-  const cerrado = lleno || !activo
+  /*
+   * Un evento cuya fecha ya pasó no admite inscripciones —el backend las
+   * rechaza— así que la tarjeta no ofrece el botón ámbar aunque el evento siga
+   * marcado como activo y con cupos. El catálogo sólo los lista si se piden los
+   * pasados a propósito.
+   */
+  const pasado = esPasado(event.fecha)
+  const cerrado = lleno || !activo || pasado
   const destino = eventoDetalle(event.id)
 
   return (
@@ -42,7 +50,7 @@ export function EventCard({ event, posicion = 0 }) {
     >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <CategoryChip nombre={event.categoriaNombre} />
-        <StatusBadge estado={event.estado} lleno={lleno} />
+        <StatusBadge estado={event.estado} pasado={pasado} lleno={lleno} />
       </div>
 
       <h3 className="mt-4 font-serif text-title font-semibold leading-snug">
@@ -81,7 +89,12 @@ export function EventCard({ event, posicion = 0 }) {
               completa en el detalle, que es donde vive el formulario. */}
           {cerrado ? (
             <span className="btn flex-1 cursor-not-allowed bg-card-muted text-fg-subtle">
-              {lleno ? 'Sin cupos' : (meta?.label ?? 'No disponible')}
+              {/* Mismo orden que el distintivo: estado, luego fecha, luego aforo. */}
+              {!activo
+                ? (meta?.label ?? 'No disponible')
+                : pasado
+                  ? 'Ya se realizó'
+                  : 'Sin cupos'}
             </span>
           ) : (
             <Link to={destino} className="btn btn-accent flex-1">

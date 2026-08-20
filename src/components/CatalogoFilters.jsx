@@ -4,6 +4,11 @@ import { CalendarIcon, CheckIcon, CloseIcon, SearchIcon } from '@components/icon
 import { normalizar } from '@constants/categories'
 import { RANGO_PERSONALIZADO, RANGOS_FECHA, etiquetaDeRango } from '@constants/rangosFecha'
 import { ACTIVO, CATALOGO_PARAMS } from '@constants/routes'
+import {
+  TIEMPOS,
+  TIEMPO_POR_DEFECTO,
+  etiquetaDeTiempo,
+} from '@constants/tiempoEvento'
 import { cn } from '@utils/cn'
 
 /**
@@ -26,7 +31,7 @@ const MAX_CHIPS = 6
  * @param {{
  *   categorias: import('@/types/event').Category[],
  *   filtros: { q: string, categoriaId: string | null, fecha: string | null,
- *              desde: string, hasta: string, proximos: boolean, disponibles: boolean },
+ *              desde: string, hasta: string, tiempo: string, disponibles: boolean },
  *   rangoInvalido?: boolean,
  *   onFiltrar: (cambios: Record<string, string | number | null>) => void,
  *   onLimpiar: () => void,
@@ -66,10 +71,16 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
       quitar: () => onFiltrar({ [CATALOGO_PARAMS.CATEGORIA]: null }),
     },
     conFechas && { clave: 'fecha', texto: etiquetaFecha, quitar: limpiarFechas },
-    filtros.proximos && {
-      clave: 'proximos',
-      texto: 'Solo próximos',
-      quitar: () => onFiltrar({ [CATALOGO_PARAMS.PROXIMOS]: null }),
+    /*
+     * «Próximos» es lo que el catálogo hace de fábrica, así que no se resume
+     * como filtro puesto: sólo aparece cuando se ha pedido otra cosa, y
+     * quitarlo devuelve al valor por defecto en vez de dejar el catálogo sin
+     * criterio temporal.
+     */
+    filtros.tiempo !== TIEMPO_POR_DEFECTO && {
+      clave: 'tiempo',
+      texto: etiquetaDeTiempo(filtros.tiempo),
+      quitar: () => onFiltrar({ [CATALOGO_PARAMS.TIEMPO]: null }),
     },
     filtros.disponibles && {
       clave: 'disponibles',
@@ -96,21 +107,22 @@ export function CatalogoFilters({ categorias, filtros, rangoInvalido = false, on
           onLimpiar={limpiarFechas}
         />
 
-        {/*
-          Los dos interruptores son los filtros que más se repiten y no esconden
-          ninguna lista, así que van sueltos en la barra: uno pulsa, la rejilla
-          responde. Ambos los resuelve el backend (`solo_proximos`,
-          `solo_disponibles`), no el cliente.
-        */}
-        <Interruptor
-          activo={filtros.proximos}
-          onClick={() =>
-            onFiltrar({ [CATALOGO_PARAMS.PROXIMOS]: filtros.proximos ? null : ACTIVO })
+        <FiltroTiempo
+          tiempo={filtros.tiempo}
+          onElegir={(clave) =>
+            onFiltrar({
+              // El valor por defecto se borra de la URL en vez de escribirse:
+              // el catálogo sin filtros tiene la query string vacía.
+              [CATALOGO_PARAMS.TIEMPO]: clave === TIEMPO_POR_DEFECTO ? null : clave,
+            })
           }
-        >
-          Próximos
-        </Interruptor>
+        />
 
+        {/*
+          «Con cupo» es de los filtros que más se repiten y no esconde ninguna
+          lista, así que va suelto en la barra: uno pulsa, la rejilla responde.
+          Lo resuelve el backend (`solo_disponibles`), no el cliente.
+        */}
         <Interruptor
           activo={filtros.disponibles}
           onClick={() =>
@@ -285,6 +297,65 @@ function OpcionCategoria({ seleccionada, onClick, children }) {
       <span className="flex-1 truncate">{children}</span>
       {seleccionada && <CheckIcon className="h-4 w-4 shrink-0 text-secondary" />}
     </button>
+  )
+}
+
+/**
+ * Momento del catálogo: próximos, pasados o todos.
+ *
+ * Va en un desplegable y no en tres chips porque no es un interruptor: siempre
+ * hay una opción puesta —de fábrica, «Próximos»— y el botón tiene que decir
+ * cuál es sin que haya que leer una fila de chips para deducirlo.
+ *
+ * Elegir cierra el panel: es una opción entre tres, no un ajuste que se retoque
+ * varias veces seguidas como el rango de fechas.
+ */
+function FiltroTiempo({ tiempo, onElegir }) {
+  return (
+    <Desplegable
+      etiqueta="Mostrar:"
+      valor={etiquetaDeTiempo(tiempo).toLowerCase()}
+      activo={tiempo !== TIEMPO_POR_DEFECTO}
+    >
+      {(cerrar) => (
+        <ul className="space-y-0.5">
+          {TIEMPOS.map((opcion) => (
+            <li key={opcion.clave}>
+              <button
+                type="button"
+                aria-pressed={tiempo === opcion.clave}
+                onClick={() => {
+                  onElegir(opcion.clave)
+                  cerrar()
+                }}
+                className={cn(
+                  'flex w-full items-start gap-2 rounded-card px-3 py-2 text-left transition-colors hover:bg-card-hover',
+                  tiempo === opcion.clave ? 'text-fg' : 'text-fg-muted',
+                )}
+              >
+                <span className="flex-1">
+                  <span
+                    className={cn(
+                      'block text-sm',
+                      tiempo === opcion.clave && 'font-semibold',
+                    )}
+                  >
+                    {opcion.etiqueta}
+                  </span>
+                  {/* El resumen explica qué se deja fuera: «pasados» sin más no
+                      dice que esos eventos ya no admitan inscripción. */}
+                  <span className="block text-xs text-fg-subtle">{opcion.resumen}</span>
+                </span>
+
+                {tiempo === opcion.clave && (
+                  <CheckIcon className="mt-0.5 h-4 w-4 shrink-0 text-secondary" />
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </Desplegable>
   )
 }
 

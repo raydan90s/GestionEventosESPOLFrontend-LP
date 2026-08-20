@@ -155,6 +155,21 @@ en instantes ISO —principio y **fin** del día— antes de mandarlas como `fec
 enviar la fecha suelta dejaría fuera los eventos de esa misma tarde y el servidor la
 interpretaría en su propia zona horaria, no en la de quien filtra.
 
+El parámetro `tiempo` es el único filtro con un valor por defecto que no es «sin filtro»:
+sin él, el catálogo lista **sólo los eventos que aún no se han realizado**
+(`solo_proximos=true`). Un evento cuya fecha ya pasó no admite inscripciones —la API las
+rechaza con un 409— así que listarlo junto a los demás sólo lleva a intentar apuntarse a
+algo imposible. El histórico se pide a propósito con `tiempo=pasados`
+(`solo_pasados=true`, que la API devuelve de más reciente a más antiguo) y `tiempo=todos`
+los mezcla. Las opciones y el valor por defecto viven en
+[src/constants/tiempoEvento.js](../src/constants/tiempoEvento.js); el valor por defecto se
+omite de la URL, para que el catálogo sin filtros tenga la query string vacía.
+
+Que un evento ya haya pasado lo decide [`esPasado()`](../src/utils/eventoTiempo.js), y con
+eso la tarjeta y el detalle cierran la inscripción igual que hacen con el estado o el
+aforo: comodidad para no ofrecer un botón condenado, no control —el control sigue siendo
+del servidor.
+
 ## Configuración de entorno
 
 `src/config/api.js` lee `import.meta.env.VITE_API_URL`, con fallback a `http://localhost/api`.

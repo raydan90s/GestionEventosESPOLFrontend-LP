@@ -8,6 +8,7 @@ import { ArrowLeftIcon, CalendarIcon, PinIcon, UsersIcon } from '@components/ico
 import { EVENT_STATUS, EVENT_STATUS_META } from '@constants/eventStatus'
 import { ROUTES, eventoAsistentes } from '@constants/routes'
 import { useEvento } from '@hooks/useEvento'
+import { esPasado } from '@utils/eventoTiempo'
 import { formatDateTime } from '@utils/formatDate'
 
 /**
@@ -54,6 +55,9 @@ export default function EventoDetallePage() {
 
   const activo = evento.estado === EVENT_STATUS.ACTIVO
   const meta = EVENT_STATUS_META[evento.estado]
+  // La fecha cierra la inscripción igual que el estado: el backend rechaza
+  // apuntarse a un evento que ya se realizó, así que no se ofrece el formulario.
+  const pasado = esPasado(evento.fecha)
 
   return (
     <div className="space-y-8">
@@ -70,7 +74,7 @@ export default function EventoDetallePage() {
       <header className="max-w-3xl space-y-4">
         <div className="flex flex-wrap items-center gap-2">
           <CategoryChip nombre={evento.categoriaNombre} />
-          <StatusBadge estado={evento.estado} />
+          <StatusBadge estado={evento.estado} pasado={pasado} />
         </div>
 
         <h1 className="font-serif text-headline font-semibold leading-tight md:text-display">
@@ -127,7 +131,7 @@ export default function EventoDetallePage() {
             </Link>
           </div>
 
-          {activo ? (
+          {activo && !pasado ? (
             /*
              * `cuposDisponibles` viene del servidor, así que el botón ya se puede
              * deshabilitar antes de enviar. Aun así el backend vuelve a validar el
@@ -142,8 +146,9 @@ export default function EventoDetallePage() {
             />
           ) : (
             <p className="surface bg-card-muted px-4 py-3 text-sm text-fg-muted">
-              Este evento está {meta?.label.toLowerCase() ?? evento.estado} y no admite
-              inscripciones.
+              {activo
+                ? 'Este evento ya se realizó y no admite nuevas inscripciones.'
+                : `Este evento está ${meta?.label.toLowerCase() ?? evento.estado} y no admite inscripciones.`}
             </p>
           )}
         </aside>
